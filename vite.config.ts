@@ -13,4 +13,5 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
+  base: process.env.NODE_ENV === 'production' ? '/fred_repl_landing_page/' : '/',
 });
