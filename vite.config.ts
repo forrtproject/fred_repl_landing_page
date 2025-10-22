@@ -13,5 +13,5 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
-  base: '/fred_repl_landing_page/',
+  base: './',
 });
