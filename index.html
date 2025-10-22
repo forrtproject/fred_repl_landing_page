@@ -1,91 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+  <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/icon_hub.webp">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Replication Checker</title>
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-
-<body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="logo">
-            <img src="https://forrt.org/img/FORRT.svg" alt="FORRT Logo" />
-        </div>
-        <ul class="navlist">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="https://forrt.org/about/us/" target="_blank">About</a></li>
-            <li><a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a></li>
-            <li><a href="#">Contact</a></li>
-        </ul>
-    </nav>
-
-    <!-- Intro Section -->
-    <section class="intro">
-        <div class="introtext">
-            <div class="bigtext">
-                <h3 class="mainhead">Enter DOI to Check for Replication:</h3>
-            </div>
-            <div class="smalltext">
-                <p class="about">
-                <p class="about">
-                    Replication is essential to scientific progress. Use this tool to check whether a study has been
-                    replicated, explore the outcomes, and contribute to the growing ecosystem of reproducible research.
-                    If you spot missing data or want to suggest a new replication, we welcome your input!
-                </p>
-                </p>
-            </div>
-        </div>
-        <div class="repdiagram">
-            <img src="https://forrt.org/replication-hub/rep_hub_framework.webp" alt="Replication Framework Diagram" />
-        </div>
-    </section>
-
-    <!-- Main DOI Checker Box -->
-    <section class="mainbox">
-        <div class="container">
-            <h2>Check Replications of a Paper</h2>
-            <input type="text" id="doiInput" placeholder="Enter DOI (e.g., 10.1037/abc123)" />
-            <button id="fetchBtn">Check</button>
-
-            <!-- Summary of outcomes -->
-            <div id="summary"></div>
-
-            <!-- Fallback message -->
-            <div id="fallback" style="display: none;">
-                <p>No record found. <a
-                        href="https://docs.google.com/forms/d/e/1FAIpQLSeMCwdtP0TPgL55stniuyyTxnNwyC34mO4VUuLcQwYrLI89sQ/viewform"
-                        target="_blank">Suggest a new replication</a></p>
-            </div>
-
-            <!-- Results table -->
-            <div id="result"></div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-logo">
-                <img src="https://forrt.org/img/FORRT.svg" alt="FORRT Logo" />
-            </div>
-            <div class="footer-links">
-                <a href="index.html">Home</a>
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeMCwdtP0TPgL55stniuyyTxnNwyC34mO4VUuLcQwYrLI89sQ/viewform"
-                    target="_blank">Suggest Replication Studies</a>
-                <a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a>
-                <a href="#">Contact</a>
-            </div>
-            <div class="footer-text">
-                <p>&copy; 2025 FORRT Project. All Rights Reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- JavaScript -->
-    <script src="javascript/script.js"></script>
-</body>
-
+    <meta name="theme-color" content="#004055">
+    <title>FReD Replication Summary</title>
+  </head>
+  <body>
+    <div id="root"></div>
+        <script type="module" src="/src/index.tsx"></script>
+  </body>
 </html>

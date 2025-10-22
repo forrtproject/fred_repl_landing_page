@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:gh-pages": "BUILD_ENV=gh-pages npm run build",
+    "build:gh-pages": "set BUILD_ENV=gh-pages && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -15,6 +15,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.15",
     "@types/node": "^24.6.0",
+    "daisyui": "^5.3.7",
     "tailwindcss": "^4.1.15",
     "typescript": "~5.9.3",
     "vite": "^7.1.7",

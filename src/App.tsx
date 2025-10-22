@@ -1,25 +1,67 @@
-import { createSignal } from 'solid-js'
-import forrtLogo from './assets/forrt.svg'
-import './App.css'
+import repResearch from '/forrt_text.svg'
+import { ReplicationSearchPanel } from './components/ReplicationSearchPanel'
+import { Footer } from './components/Footer'
+import forrt from './assets/FORRT.svg'
 
 function App() {
-  const [count, setCount] = createSignal(0)
-
   return (
-    <>
-      <div>
-        <img src={forrtLogo} class="logo" alt="Forrt logo" />
+    <div class="bg-neutral min-h-screen">
+      <div class="navbar bg-base-100 shadow-sm">
+        <div class="navbar-start">
+          <div class="dropdown">
+            <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" /> </svg>
+            </div>
+            <ul
+              tabindex="-1"
+              class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
+              <li><a href="index.html">Home</a></li>
+              <li><a href="https://forrt.org/about/us/" target="_blank">About</a></li>
+              <li><a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
+          <a class="btn btn-ghost text-xl">
+            <div class="avatar">
+              <div class="w-10 rounded">
+                <img src={forrt} alt="FORRT Logo" />
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="navbar-center hidden lg:flex">
+          <ul class="menu menu-horizontal px-1">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="https://forrt.org/about/us/" target="_blank">About</a></li>
+            <li><a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="navbar-end">
+          <a class="btn">FORRT</a>
+        </div>
       </div>
-      <h1>Replication Summary Landing Page</h1>
-      <div class="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count()}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div class="hero bg-base-200 min-h-[67vh]">
+        <div class="hero-content flex-col lg:flex-row">
+          <div>
+            <div class="flex w-64">
+              <img
+                src={repResearch}
+                alt="Replication Research"
+                class="rounded-lg"
+              />
+            </div>
+            <h1 class="text-5xl font-bold">Replication Summary</h1>
+            <p class="py-6">
+              Replication is essential to scientific progress. Use this tool to check whether a study has been replicated, explore the outcomes, and contribute to the growing ecosystem of reproducible research.
+              If you spot missing data or want to suggest a new replication, we welcome your input!
+            </p>
+            <ReplicationSearchPanel />
+          </div>
+        </div>
       </div>
-    </>
+      <Footer />
+    </div>
   )
 }
 
