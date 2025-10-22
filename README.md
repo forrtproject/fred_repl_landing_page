@@ -10,11 +10,9 @@ Generate landing pages that summarise and link to replication attempts given an 
 [View Example Landing Page Design](https://figma.com/design/u46XGX6Uq4D3FPhBRzbN5V/Replication-Summary?t=mq95eytelNppAD5j-0)
 
 
-The landing is built with solid js.
+The landing is built with solid js. Learn more on the [Solid Website](https://solidjs.com).
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
-
-## To Contibute
+## To Contribute
 
 ```bash
 $ npm install # or pnpm install or yarn install
