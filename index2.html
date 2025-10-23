@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Replication Checker</title>
+    <link rel="stylesheet" href="css/style.css" />
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <img src="https://forrt.org/img/FORRT.svg" alt="FORRT Logo" />
+        </div>
+        <ul class="navlist">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="https://forrt.org/about/us/" target="_blank">About</a></li>
+            <li><a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a></li>
+            <li><a href="usage.html">Usage</a></li>
+        </ul>
+    </nav>
+
+    <!-- Intro Section -->
+    <section class="intro">
+        <div class="introtext">
+            <div class="bigtext">
+                <h3 class="mainhead">Enter DOI to Check for Replication:</h3>
+            </div>
+            <div class="smalltext">
+
+                <p class="about">
+                    Replication is essential to scientific progress. Use this tool to check whether a study has been
+                    replicated, explore the outcomes, and contribute to the growing ecosystem of reproducible research.
+                    If you spot missing data or want to suggest a new replication, we welcome your input!
+                    This tool provides a quick way to check replication status using DOIs, view metadata from original
+                    and replicated studies, and explore outcomes such as successful, failed, or mixed replications. It
+                    also links to PubPeer discussions and lets you flag issues for review.
+                    <p class="about2">
+
+                    Whether you're a researcher, student, or science enthusiast, your input matters. If you notice a
+                    missing replication, incorrect metadata, or want to highlight a study worth revisiting, use the
+                    “Suggest a new replication” link to share it with the community.</p>
+
+
+                </p>
+
+            </div>
+        </div>
+        <div class="repdiagram">
+            <img src="https://forrt.org/replication-hub/rep_hub_framework.webp" alt="Replication Framework Diagram" />
+        </div>
+    </section>
+
+    <!-- Main DOI Checker Box -->
+    <section class="mainbox">
+        <div class="container">
+            <h2>Check Replications of a Paper</h2>
+            <input type="text" id="doiInput" placeholder="Enter DOI (e.g., 10.1037/abc123)" />
+            <button id="fetchBtn">Check</button>
+
+            <!-- Summary of outcomes -->
+            <div id="summary"></div>
+
+            <!-- Fallback message -->
+            <div id="fallback" style="display: none;">
+                <p>No record found. <a
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSeMCwdtP0TPgL55stniuyyTxnNwyC34mO4VUuLcQwYrLI89sQ/viewform"
+                        target="_blank">Suggest a new replication</a></p>
+            </div>
+
+            <!-- Results table -->
+            <div id="result"></div>
+        </div>
+    </section>
+
+    <!-- Full-page results section -->
+    <section id="fullResults" class="full-results">
+        <div id="originalStudy"></div>
+        <div id="replicationSummary"></div>
+    </section>
+
+    <div id="replicationGraph"></div>
+    <div id="sfc2ly14py9gc76gu2szrl2yksbre9bqf98"></div>
+    <script type="text/javascript"
+        src="https://counter1.optistats.ovh/private/counter.js?c=2ly14py9gc76gu2szrl2yksbre9bqf98&down=async"
+        async></script><noscript><a href="https://www.freecounterstat.com" title="free web counters"><img
+                src="https://counter1.optistats.ovh/private/freecounterstat.php?c=2ly14py9gc76gu2szrl2yksbre9bqf98"
+                border="0" title="free web counters" alt="free web counters"></a></noscript>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-logo">
+                <img src="https://forrt.org/img/FORRT.svg" alt="FORRT Logo" />
+            </div>
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeMCwdtP0TPgL55stniuyyTxnNwyC34mO4VUuLcQwYrLI89sQ/viewform"
+                    target="_blank">Suggest Replication Studies</a>
+                <a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="footer-text">
+                <p>&copy; 2025 FORRT Project. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="javascript/script.js"></script>
+    
+</body>
+
+</html>
