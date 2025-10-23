@@ -12,28 +12,50 @@ fetchBtn.addEventListener("click", () => {
 });
 
 async function fetchData(doi) {
-    summaryBox.innerHTML = "";
-    resultBox.innerHTML = "";
-    fallbackBox.style.display = "none";
+  summaryBox.innerHTML = "";
+  resultBox.innerHTML = "";
+  fallbackBox.style.display = "none";
 
-    try {
-        const response = await fetch(`${API_URL}?doi=${encodeURIComponent(doi)}`);
+  const normalizedDOI = doi.trim().toLowerCase();
+  const encodedDOI = encodeURIComponent(normalizedDOI);
 
-        const result = await response.json();
-        const normalizedDOI = doi.trim().toLowerCase();
-        const data = result.results?.[normalizedDOI];
+  try {
+    const response = await fetch(`${API_URL}?doi=${encodedDOI}`);
+    const result = await response.json();
 
-        if (!data || !data.original) {
-            showFallback(doi);
-            return;
-        }
+    const candidate = result.results?.[normalizedDOI]?.candidate;
+    const meta = candidate?.meta;
 
-        renderOriginal(data.original);
-        renderReplications(data.replications || [], data.original.doi);
-    } catch (error) {
-        console.error("Error:", error);
-        showFallback(doi);
+    if (!meta || !meta.replications || meta.replications.length === 0) {
+      showFallback(normalizedDOI);
+      return;
     }
+
+    // Extract original study from first replication record
+    const original = {
+      authors: meta.replications[0].author_o.map(a => `${a.given} ${a.family}`).join(", "),
+      title: meta.replications[0].title_o,
+      journal: meta.replications[0].journal_o,
+      year: meta.replications[0].year_o,
+      doi: meta.replications[0].doi_o
+    };
+
+    // Extract replications
+    const replications = meta.replications.map(rep => ({
+      authors: rep.author_r.map(a => `${a.given} ${a.family}`).join(", "),
+      title: rep.title_r,
+      journal: rep.journal_r,
+      year: rep.year_r,
+      doi: rep.doi_r,
+      outcome: rep.outcome || "na"
+    }));
+
+    renderOriginal(original);
+    renderReplications(replications, original.doi);
+  } catch (error) {
+    console.error("Error:", error);
+    showFallback(normalizedDOI);
+  }
 }
 
 function renderOriginal(original) {
@@ -111,7 +133,7 @@ function getOutcomeIcon(outcome) {
         case "mixed":
             return "⚠️";
         case "na":
-            return '<img src="icons/na.svg" alt="Not Available" width="20">';
+            return 'NA';
         default:
             return "NA";
     }
@@ -138,63 +160,63 @@ function showFallback(doi) {
 
 
 
-// // Mock test
+// // // Mock test
 
 
-async function fetchData(doi) {
-    summaryBox.innerHTML = "";
-    resultBox.innerHTML = "";
-    fallbackBox.style.display = "none";
+// async function fetchData(doi) {
+//     summaryBox.innerHTML = "";
+//     resultBox.innerHTML = "";
+//     fallbackBox.style.display = "none";
 
-    // ✅ Mock block goes here
-    if (doi === "10.5555/mockdoi") {
-        const mockData = {
-            original: {
-                authors: "Marsh, John E.; Vachon, François; Jones, Dylan M.",
-                title: "When does between-sequence phonological similarity promote irrelevant sound disruption?",
-                journal: "Journal of Experimental Psychology: Learning, Memory, and Cognition",
-                year: "2008",
-                doi: "10.5555/mockdoi",
-                url: "https://doi.org/10.5555/mockdoi"
-            },
-            replications: [
-                {
-                    authors: "Smith, Alice; Kumar, Rishabh",
-                    title: "Revisiting phonological similarity effects in auditory distraction",
-                    journal: "Memory & Cognition",
-                    year: "2015",
-                    doi: "10.5555/rep1",
-                    url: "https://doi.org/10.5555/rep1",
-                    outcome: "success",
-                    replication_type: "Direct"
-                },
-                {
-                    authors: "Chen, Li; Patel, Anika",
-                    title: "Phonological interference in working memory tasks",
-                    journal: "Cognitive Psychology",
-                    year: "2017",
-                    doi: "10.5555/rep2",
-                    url: "https://doi.org/10.5555/rep2",
-                    outcome: "failure",
-                    replication_type: "Conceptual"
-                },
-                {
-                    authors: "Garcia, Miguel; Tanaka, Hiroshi",
-                    title: "Auditory distraction and memory retention: A replication study",
-                    journal: "Psychological Bulletin",
-                    year: "2020",
-                    doi: "10.5555/rep3",
-                    url: "https://doi.org/10.5555/rep3",
-                    outcome: "mixed",
-                    replication_type: "Partial"
-                }
-            ]
-        };
+//     // ✅ Mock block goes here
+//     if (doi === "10.5555/mockdoi") {
+//         const mockData = {
+//             original: {
+//                 authors: "Marsh, John E.; Vachon, François; Jones, Dylan M.",
+//                 title: "When does between-sequence phonological similarity promote irrelevant sound disruption?",
+//                 journal: "Journal of Experimental Psychology: Learning, Memory, and Cognition",
+//                 year: "2008",
+//                 doi: "10.5555/mockdoi",
+//                 url: "https://doi.org/10.5555/mockdoi"
+//             },
+//             replications: [
+//                 {
+//                     authors: "Smith, Alice; Kumar, Rishabh",
+//                     title: "Revisiting phonological similarity effects in auditory distraction",
+//                     journal: "Memory & Cognition",
+//                     year: "2015",
+//                     doi: "10.5555/rep1",
+//                     url: "https://doi.org/10.5555/rep1",
+//                     outcome: "success",
+//                     replication_type: "Direct"
+//                 },
+//                 {
+//                     authors: "Chen, Li; Patel, Anika",
+//                     title: "Phonological interference in working memory tasks",
+//                     journal: "Cognitive Psychology",
+//                     year: "2017",
+//                     doi: "10.5555/rep2",
+//                     url: "https://doi.org/10.5555/rep2",
+//                     outcome: "failure",
+//                     replication_type: "Conceptual"
+//                 },
+//                 {
+//                     authors: "Garcia, Miguel; Tanaka, Hiroshi",
+//                     title: "Auditory distraction and memory retention: A replication study",
+//                     journal: "Psychological Bulletin",
+//                     year: "2020",
+//                     doi: "10.5555/rep3",
+//                     url: "https://doi.org/10.5555/rep3",
+//                     outcome: "mixed",
+//                     replication_type: "Partial"
+//                 }
+//             ]
+//         };
 
-        renderOriginal(mockData.original);
-        renderReplications(mockData.replications, mockData.original.doi);
-        return;
-    }
+//         renderOriginal(mockData.original);
+//         renderReplications(mockData.replications, mockData.original.doi);
+//         return;
+//     }
 
-    // ...rest of your fetch logic
-}
+//     // ...rest of your fetch logic
+// }
