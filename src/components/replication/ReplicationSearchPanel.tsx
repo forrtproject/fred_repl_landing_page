@@ -1,19 +1,19 @@
 import { createEffect, createSignal, Show  } from "solid-js";
-import { Search } from "./Search";
-import { fetchDOIInfo } from "../api/backend";
-import type { DOIAPIResponse } from "../@types";
+import { Search } from "../Search";
+import { fetchDOIInfo } from "../../api/backend";
+import type { DOIAPIResponse } from "../../@types";
 import { ReplicationSummary } from "./ReplicationSummary";
-import { Skeleton } from "./Skeleton";
+import { Skeleton } from "../Skeleton";
+import { query } from "../../utils/http";
 
 export const ReplicationSearchPanel = () => {
-    const [searchTerm, setSearch] = createSignal('');
+    const [searchTerm, setSearch] = createSignal(query.get('doi') || '');
     const [doi, setDoi] = createSignal<DOIAPIResponse | null>(null);
     const [isLoading, setIsLoading] = createSignal(false);
     
     createEffect(() => {
-        const query = searchTerm();
-        console.log("Search term changed:", query);
-        if (query.trim() === '') {
+        const q = searchTerm();
+        if (q.trim() === '') {
             setDoi(null);
             setIsLoading(false);
             return;
@@ -23,7 +23,7 @@ export const ReplicationSearchPanel = () => {
         
         // Debounce the API call by 1 second
         const timeoutId = setTimeout(() => {
-            fetchDOIInfo(query).then(data => {
+            fetchDOIInfo(q).then(data => {
                 console.log(data);
                 setDoi(data);
                 setIsLoading(false);
@@ -40,7 +40,7 @@ export const ReplicationSearchPanel = () => {
     return (
         <div class="p-4">
             <h2 class="text-lg font-bold mb-2">Search for Replications</h2>
-            <Search placeholder="Begin typing your doi (document object id)" onChange={q => setSearch(q)} />
+            <Search value={searchTerm()} placeholder="Begin typing your doi (document object id)" onChange={q => setSearch(q)} />
             <Show when={isLoading()}>
                 <section class="p-4 rounded-md flex justify-center">
                     <Skeleton />

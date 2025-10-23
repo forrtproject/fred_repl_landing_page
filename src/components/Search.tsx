@@ -1,6 +1,7 @@
 type SearchProps = {
     placeholder?: string;
     onChange?: (value: string) => void;
+    value?: string;
 };
 export const Search = (props: SearchProps) => {
     return (
@@ -17,7 +18,7 @@ export const Search = (props: SearchProps) => {
                 <path d="m21 21-4.3-4.3"></path>
                 </g>
             </svg>
-            <input onInput={(e) => props.onChange?.(e.currentTarget.value)} type="search" required placeholder={props.placeholder || "Search"} />
+            <input value={props.value ?? ''} onInput={(e) => props.onChange?.(e.currentTarget.value)} type="search" required placeholder={props.placeholder || "Search"} />
         </label>
     )
 }

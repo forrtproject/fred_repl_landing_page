@@ -1,5 +1,9 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@custom-variant dark (&:where(.dark, .dark *));
+@plugin "daisyui" {
+  themes: light --default;
+};
+
 
 :root {
   --blue: #007bff;
@@ -23,6 +27,7 @@
   --danger: #dc3545;
   --light: #f8f9fa;
   --dark: #343a40;
+  --neutral: #3E3E3E;
   --breakpoint-xs: 0;
   --breakpoint-sm: 576px;
   --breakpoint-md: 768px;
@@ -34,4 +39,6 @@
 
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
+  --color-neutral: var(--neutral);
+  --color-white: var(--white);
 }
