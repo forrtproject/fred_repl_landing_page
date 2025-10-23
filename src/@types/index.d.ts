@@ -59,8 +59,10 @@ export type FormattedDOIResult = {
     outcomes?: {
       success?: number,
       failed?: number,
-      mixed?: number
-    }
+      mixed?: number,
+      total?: number,
+    },
+    authors?: Author[],
 };
 
 type IconProps = {
