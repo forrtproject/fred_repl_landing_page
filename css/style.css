@@ -248,3 +248,14 @@ th {
   padding: 0.5rem;
   text-align: left;
 }
+
+/* Diagram */
+#replicationGraph {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 40px auto;
+  width: 100%;
+  max-width: 900px;
+  height: 300px;
+}
