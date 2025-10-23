@@ -21,8 +21,21 @@ export const ReplicationSummary = ({ data }: ReplicationSummaryProps) => {
                     <ReplicationActionsPanel data={rep} />
                     <div class="divider"></div>
                     <ReplicationActionSuccessRate outcomes={rep.outcomes} />
-                    <Replication authors={rep.original?.author_o} title={rep.original?.title_o} appaRef={rep.original?.apa_ref_o} />
-                    <Replication authors={rep.original?.author_r} title={rep.original?.title_r} appaRef={rep.original?.apa_ref_r} />
+                    <div class="card border border-dashed rounded-sm border-gray-300 mt-4">
+                        <div class="card-body flex flex-col gap-4">
+                            {
+                                rep.replications?.map((r) => (
+                                    <Replication
+                                        outcome={r.outcome || 'blank'}
+                                        authors={r.author_r || undefined}
+                                        title={r.title_r || ''}
+                                        appaRef={r.apa_ref_r || ''}
+                                        doi={r.doi_r}
+                                    />
+                                ))
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
