@@ -6,7 +6,7 @@ import forrt from './assets/FORRT.svg'
 function App() {
   return (
     <div class="bg-neutral min-h-screen">
-      <div class="navbar bg-base-100 shadow-sm">
+      <div class="navbar bg-neutral text-neutral-content shadow-sm">
         <div class="navbar-start">
           <div class="dropdown">
             <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
@@ -15,36 +15,41 @@ function App() {
             <ul
               tabindex="-1"
               class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-              <li><a href="index.html">Home</a></li>
+              <li><a href="/">Home</a></li>
               <li><a href="https://forrt.org/about/us/" target="_blank">About</a></li>
               <li><a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a></li>
               <li><a href="#">Contact</a></li>
             </ul>
           </div>
-          <a class="btn btn-ghost text-xl">
+          <a class="link text-xl" href='/'>
             <div class="avatar">
               <div class="w-10 rounded">
                 <img src={forrt} alt="FORRT Logo" />
               </div>
+              <div class="ml-2 font-bold flex flex-col max-h-10 w-34">
+                <span class="text-sm">FReD</span>
+                <span class="text-xs">Replication Hub</span>
+              </div>
+              
             </div>
           </a>
         </div>
-        <div class="navbar-center hidden lg:flex">
-          <ul class="menu menu-horizontal px-1">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="https://forrt.org/about/us/" target="_blank">About</a></li>
-            <li><a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
         <div class="navbar-end">
-          <a class="btn">FORRT</a>
+          <div class="hidden lg:flex">
+            <ul class="menu menu-horizontal px-1">
+              <li><a href="/">Home</a></li>
+              <li><a href="https://forrt.org/about/us/" target="_blank">About</a></li>
+              <li><a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a></li>
+              <li><a href="#">Contact</a></li>
+            </ul>
+          </div>
+          <a class="btn btn-secondary">Contact Us</a>
         </div>
       </div>
-      <div class="hero bg-base-200 min-h-[67vh]">
+      <div class="hero bg-base-200 min-h-[68vh]">
         <div class="hero-content flex-col lg:flex-row">
           <div>
-            <div class="flex w-64">
+            <div class="flex w-64 shadow-sm">
               <img
                 src={repResearch}
                 alt="Replication Research"

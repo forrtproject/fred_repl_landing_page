@@ -2,7 +2,7 @@ import repResearch from '../assets/FORRT.svg'
 
 export const Footer = () => {
     return (
-        <footer class="footer sm:footer-horizontal bg-neutral text-neutral-content p-10">
+        <footer class="footer sm:footer-horizontal bg-neutral text-neutral-content p-4">
             <aside>
                 <div class="flex w-64">
                     <img
