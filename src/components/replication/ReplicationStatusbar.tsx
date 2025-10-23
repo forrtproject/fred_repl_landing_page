@@ -5,7 +5,7 @@ import { WarningIcon } from "../icons/warning"
 type ReplicationStatusBarProps = {
     outcomes?: FormattedDOIResult["outcomes"];
 }
-export const ReplicationStatusBar = (props: ReplicationStatusBarProps) => {
+export const ReplicationStatusbar = (props: ReplicationStatusBarProps) => {
     return (
         <div class="">
             <h3 class="text-lg font-semibold">Replication Studies</h3>
