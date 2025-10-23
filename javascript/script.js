@@ -179,7 +179,7 @@ function renderGraph(data) {
   d3.select("#replicationGraph").selectAll("*").remove(); // Clear old graph
 
   const width = 950;
-  const height = 6500;
+  const height = 650;
 
   const svg = d3.select("#replicationGraph")
     .append("svg")
