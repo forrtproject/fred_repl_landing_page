@@ -29,7 +29,7 @@ export type Replication = {
   issue_r: string | null;
   pages_r: string | null;
   apa_ref_r: string | null;
-  outcome: "failed" | "successful" | "partial";
+  outcome: "failed" | "successful" | "partial" | "mixed";
 };
 
 export type Meta = {
@@ -56,4 +56,14 @@ export type FormattedDOIResult = {
     original?: Replication,
     replications?: Replication[],
     data?: DOIResult,
+    outcomes?: {
+      success?: number,
+      failed?: number,
+      mixed?: number
+    }
+};
+
+type IconProps = {
+    className?: string;
+    color?: string;
 };

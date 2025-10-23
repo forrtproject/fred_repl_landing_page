@@ -1,8 +1,9 @@
+import { EyeOpenIcon } from "../icons/eye-open";
 import { ScrollIcon } from "../icons/scroll";
 
-export const ReplicationToolbar = (props: { title?: string | null }) => {
+export const ReplicationToolbar = (props: { title?: string | null, doi?: string | null }) => {
     return (
-        <div class="navbar bg-neutral shadow-sm">
+        <div class="navbar bg-neutral shadow-sm rounded-t-sm">
             <div class="navbar-start">
                 <div class="w-10 rounded">
                     <ScrollIcon />
@@ -12,6 +13,16 @@ export const ReplicationToolbar = (props: { title?: string | null }) => {
                     <span class="text-xs truncate max-w-full">{props.title}</span>
                 </div>
             </div>
+            {
+                props.doi ? (
+                    <div class="navbar-end">
+                        <a class="btn btn-sm" href={`https://doi.org/${props.doi}`} target="__blank">
+                            <span class="mr-2"><EyeOpenIcon /></span>
+                            <span>View Research</span>
+                        </a>
+                    </div>
+                ) : null
+            }
         </div>
     );
 }

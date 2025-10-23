@@ -1,7 +1,5 @@
-type IconProps = {
-    className?: string;
-    color?: string;
-};
+import type { IconProps } from "../../@types";
+
 export const ScrollIcon = (props: IconProps) => (
     <svg class={props.className} width="24" height="26" viewBox="0 0 24 26" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M15 14H10" stroke={props.color || "white"} stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
