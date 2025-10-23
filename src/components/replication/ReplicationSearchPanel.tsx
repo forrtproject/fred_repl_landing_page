@@ -1,10 +1,10 @@
 import { createEffect, createSignal, Show  } from "solid-js";
-import { Search } from "./Search";
-import { fetchDOIInfo } from "../api/backend";
-import type { DOIAPIResponse } from "../@types";
+import { Search } from "../Search";
+import { fetchDOIInfo } from "../../api/backend";
+import type { DOIAPIResponse } from "../../@types";
 import { ReplicationSummary } from "./ReplicationSummary";
-import { Skeleton } from "./Skeleton";
-import { query } from "../utils/http";
+import { Skeleton } from "../Skeleton";
+import { query } from "../../utils/http";
 
 export const ReplicationSearchPanel = () => {
     const [searchTerm, setSearch] = createSignal(query.get('doi') || '');

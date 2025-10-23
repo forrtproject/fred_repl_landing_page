@@ -40,4 +40,5 @@
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-neutral: var(--neutral);
+  --color-white: var(--white);
 }

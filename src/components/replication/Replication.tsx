@@ -1,5 +1,5 @@
-import type { Author } from "../@types";
-import { MarkdownToHtml } from "../utils/markdown";
+import type { Author } from "../../@types";
+import { MarkdownToHtml } from "../../utils/markdown";
 
 type ReplicationProps = {
     title?: string | null;

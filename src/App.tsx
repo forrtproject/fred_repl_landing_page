@@ -1,7 +1,7 @@
 import repResearch from '/forrt_text.svg'
-import { ReplicationSearchPanel } from './components/ReplicationSearchPanel'
 import { Footer } from './components/Footer'
 import forrt from './assets/FORRT.svg'
+import { ReplicationSearchPanel } from './components/replication/ReplicationSearchPanel'
 
 function App() {
   return (
