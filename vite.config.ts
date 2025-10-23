@@ -14,4 +14,5 @@ export default defineConfig({
     target: 'esnext',
   },
   base: '/fred_repl_landing_page/',
+  
 });
