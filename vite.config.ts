@@ -13,5 +13,5 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
-  base: String(process.env.BUILD_ENV)?.trim() === 'gh-pages' ? '/fred_repl_landing_page/' : '/',
+  base: '/fred_repl_landing_page/',
 });
