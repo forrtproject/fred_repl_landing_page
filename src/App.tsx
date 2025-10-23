@@ -46,7 +46,7 @@ function App() {
           <a class="btn btn-secondary">Contact Us</a>
         </div>
       </div>
-      <div class="hero bg-base-200 min-h-[68vh]">
+      <div class="hero bg-base-200 ">
         <div class="hero-content flex-col lg:flex-row">
           <div>
             <div class="flex w-64 shadow-sm">
@@ -61,10 +61,12 @@ function App() {
               Replication is essential to scientific progress. Use this tool to check whether a study has been replicated, explore the outcomes, and contribute to the growing ecosystem of reproducible research.
               If you spot missing data or want to suggest a new replication, we welcome your input!
             </p>
-            <ReplicationSearchPanel />
           </div>
         </div>
       </div>
+      <div class="bg-base-200 min-h-[40vh] pb-8">
+        <ReplicationSearchPanel />
+      </div>    
       <Footer />
     </div>
   )

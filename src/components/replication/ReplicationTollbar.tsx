@@ -3,7 +3,7 @@ import { ScrollIcon } from "../icons/scroll";
 
 export const ReplicationToolbar = (props: { title?: string | null, doi?: string | null }) => {
     return (
-        <div class="navbar bg-neutral shadow-sm rounded-t-sm">
+        <div class="navbar bg-neutral shadow-sm max-w-full rounded-t-sm">
             <div class="navbar-start">
                 <div class="w-10 rounded">
                     <ScrollIcon />
