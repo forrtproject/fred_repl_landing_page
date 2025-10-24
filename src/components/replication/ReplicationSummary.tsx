@@ -11,11 +11,10 @@ type ReplicationSummaryProps = {
 };
 export const ReplicationSummary = ({ data }: ReplicationSummaryProps) => {
     const rep = formatReplicationResponse(data);
-    console.log("Formatted Replication Data:", rep); 
     return data?.candidate ? (
         <section class="p-4 rounded-md flex justify-center">
             <div class="card max-w-full bg-base-100">
-                <ReplicationToolbar title={rep.original?.title_o} doi={rep.original?.doi_r} />
+                <ReplicationToolbar title={rep.original?.title_o} doi={rep.original?.doi_o} />
                 <div class="card-body">
                     <ReplicationStatusbar outcomes={rep.outcomes} />
                     <ReplicationActionsPanel data={rep} />
