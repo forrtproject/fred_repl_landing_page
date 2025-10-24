@@ -6,7 +6,10 @@ import { ReplicationSummary } from "./ReplicationSummary";
 import { Skeleton } from "../Skeleton";
 import { query } from "../../utils/http";
 
-export const ReplicationSearchPanel = () => {
+type ReplicationSearchPanelProps = {
+    onSuccess?: (data: DOIAPIResponse[]) => void;
+};
+export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
     const [searchTerm, setSearch] = createSignal(query.get('doi') || '');
     const [doi, setDoi] = createSignal<DOIAPIResponse | null>(null);
     const [isLoading, setIsLoading] = createSignal(false);
@@ -26,6 +29,7 @@ export const ReplicationSearchPanel = () => {
             fetchDOIInfo(q).then(data => {
                 console.log(data);
                 setDoi(data);
+                props.onSuccess?.([data]);
                 setIsLoading(false);
             }).catch(error => {
                 console.error('Error fetching DOI info:', error);
