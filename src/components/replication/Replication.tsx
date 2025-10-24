@@ -33,11 +33,6 @@ export const Replication = (props: ReplicationProps) => {
                 <div class="flex flex-col gap-4">
                     <h2 class="text-sm font-bold">{props.title}</h2>
                     <p class="text-sm"><MarkdownToHtml text={props.appaRef || ''} /></p>
-                    { props.doi ? (
-                        <a href={`https://doi.org/${props.doi}`} class="text-sm pl-0 link link-primary link-hover" target="__blank">
-                            <span class="mr-2">DOI:</span><span>{props.doi}</span>
-                        </a>
-                    ) : null }
                 </div>
             </div>
         </div>
