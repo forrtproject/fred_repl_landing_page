@@ -1,3 +1,5 @@
+
+////////// Fetch data from API/////////////
 const API_URL = "https://ouj1xoiypb.execute-api.eu-central-1.amazonaws.com/v1/original-lookup";
 
 const doiInput = document.getElementById("doiInput");
@@ -31,7 +33,8 @@ async function fetchData(doi) {
       return;
     }
 
-    // Extract original study from first replication record
+    /////////// Extract original study from first replication record
+
     const original = {
       authors: meta.replications[0].author_o.map(a => `${a.given} ${a.family}`).join(", "),
       title: meta.replications[0].title_o,
@@ -40,7 +43,7 @@ async function fetchData(doi) {
       doi: meta.replications[0].doi_o
     };
 
-    // Extract replications
+    /////////////// Extract replications
     const replications = meta.replications.map(rep => ({
       authors: rep.author_r.map(a => `${a.given} ${a.family}`).join(", "),
       title: rep.title_r,
@@ -53,6 +56,7 @@ async function fetchData(doi) {
     renderOriginal(original);
     renderReplications(replications, original.doi);
 
+////////////    
 const graphData = {
   nodes: [
     {
@@ -104,10 +108,28 @@ function renderReplications(replications, originalDOI) {
         return;
     }
 
-    const counts = { success: 0, mixed: 0, failure: 0 };
-    replications.forEach(r => {
-        if (r.outcome in counts) counts[r.outcome]++;
-    });
+
+const counts = { success: 0, mixed: 0, failure: 0 };
+
+replications.forEach(r => {
+  const rawOutcome = (r.outcome || "").toLowerCase().trim();
+
+  // Map variants to standard keys
+  let normalized;
+  if (rawOutcome === "successful") normalized = "success";
+  else if (rawOutcome === "failed") normalized = "failure";
+  else if (["success", "failure", "mixed"].includes(rawOutcome)) normalized = rawOutcome;
+
+  if (normalized && normalized in counts) {
+    counts[normalized]++;
+  }
+});
+
+
+
+
+
+
 
     const summaryText = `${replications.length} replications found: ${counts.success}  success, ${counts.failure}  failure, ${counts.mixed}  mixed`;
 
@@ -126,6 +148,7 @@ function renderReplications(replications, originalDOI) {
         <th>Flag Issue</th>
       </tr>
   `;
+
 
     replications.forEach(rep => {
         const icon = getOutcomeIcon(rep.outcome);
@@ -150,7 +173,7 @@ function renderReplications(replications, originalDOI) {
     container.innerHTML = tableHTML;
 }
 
-
+/// Table shows replications Summary//////
 function getOutcomeIcon(outcome) {
     switch (outcome) {
         case "success":
@@ -160,12 +183,13 @@ function getOutcomeIcon(outcome) {
         case "mixed":
             return "⚠️";
         case "na":
-            return 'NA';
-        default:
             return "NA";
+        default:
+            return "";
     }
 }
 
+/////////// Fallback when enter doi that does not matches////////
 
 function showFallback(doi) {
     fallbackBox.innerHTML = `
@@ -174,7 +198,7 @@ function showFallback(doi) {
     fallbackBox.style.display = "block";
 }
 
-// 
+
 function renderGraph(data) {
   d3.select("#replicationGraph").selectAll("*").remove(); // Clear old graph
 
