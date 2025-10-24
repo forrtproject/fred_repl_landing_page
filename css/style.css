@@ -1,4 +1,93 @@
 /* ===============================
+   Navigation Bar
+================================= */
+
+.navbar {
+  display: flex;
+  padding: 0 23px;
+  background-color: #DCDCDC;
+  margin-bottom: 12px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.logo img {
+  height: 56px;
+  width: 178px;
+  margin-left: 22px;
+  border-radius: 50px;
+}
+
+.navlist {
+  display: flex;
+  margin: 18px 9rem;
+  padding: 0 2rem;
+}
+
+.navlist li {
+  margin-left: 7rem;
+  font-size: 23px;
+  list-style: none;
+}
+
+.navlist li:hover {
+  background-color: #778899;
+  color: white;
+}
+
+.navlist a {
+  text-decoration: none;
+  color: black;
+  padding: 3px 1px;
+}
+
+/* ===============================
+   Intro Section
+================================= */
+.intro {
+  display: flex;
+  margin-left: 20px;
+  max-width: 108%;
+}
+
+.introtext {
+  flex-direction: column;
+  max-width: 60%;
+}
+
+.bigtext {
+  text-align: justify;
+  display: flex;
+  font-size: 25px;
+}
+
+.smalltext {
+  text-align: justify;
+  flex-direction: column;
+  font-size: 23px;
+}
+
+.about {
+  display: block;
+}
+
+.repdiagram {
+  height: 20rem;
+  width: 20rem;
+  display: flex;
+}
+
+.repdiagram img {
+  padding-left: 8rem;
+  margin-top: 15px;
+}
+
+
+
+
+
+/* ===============================
    Container and Input Styling
 ================================= */
 .container {
@@ -93,87 +182,28 @@ th {
   color: orange;
 }
 
+
+
 /* ===============================
-   Navigation Bar
+  Result of replication displayed in Table
 ================================= */
-.navbar {
-  display: flex;
-  padding: 0 23px;
-  background-color: #DCDCDC;
-  margin-bottom: 12px;
-  align-items: center;
+
+#fullResults{
+  margin:20px;
+}
+
+
+
+/* ===============================
+  Graph Formatting
+================================= */
+
+#replicationGraph{
   justify-content: center;
-  cursor: pointer;
+  text-align: center;
 }
 
-.logo img {
-  height: 56px;
-  width: 178px;
-  margin-left: 22px;
-  border-radius: 50px;
-}
 
-.navlist {
-  display: flex;
-  margin: 18px 9rem;
-  padding: 0 2rem;
-}
-
-.navlist li {
-  margin-left: 7rem;
-  font-size: 23px;
-  list-style: none;
-}
-
-.navlist li:hover {
-  background-color: #778899;
-  color: white;
-}
-
-.navlist a {
-  text-decoration: none;
-  color: black;
-  padding: 3px 1px;
-}
-
-/* ===============================
-   Intro Section
-================================= */
-.intro {
-  display: flex;
-  margin-left: 20px;
-  max-width: 108%;
-}
-
-.introtext {
-  flex-direction: column;
-  max-width: 60%;
-}
-
-.bigtext {
-  text-align: justify;
-  display: flex;
-}
-
-.smalltext {
-  text-align: justify;
-  flex-direction: column;
-}
-
-.about {
-  display: block;
-}
-
-.repdiagram {
-  height: 20rem;
-  width: 20rem;
-  display: flex;
-}
-
-.repdiagram img {
-  padding-left: 8rem;
-  margin-top: 15px;
-}
 
 /* ===============================
    Footer Styling 
@@ -219,34 +249,4 @@ th {
   margin-top: 20px;
 }
 
-/* ===============================
-   Card Styling (Optional)
-================================= */
-.card {
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  padding: 20px;
-  margin-bottom: 15px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-}
-
-.original-card {
-  border-left: 5px solid #4CAF50;
-}
-
-.replication-card {
-  border-left: 5px solid #2196F3;
-}
-
-/* Graph diagram section */
-
-#replicationGraph{
-  justify-content: center;
-  text-align: center;
-}

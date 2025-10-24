@@ -177,15 +177,23 @@ replications.forEach(r => {
 function getOutcomeIcon(outcome) {
     switch (outcome) {
         case "success":
-            return '<img src="icons/correct.png" alt="Success" width="20">';
+            return '<img src="/icons/correct.png" alt="Success" width="20">';
         case "failure":
-            return '<img src="icons/failure.png" alt="Failure" width="20">';
+            return '<img src="/icons/failure.png" alt="Failure" width="20">';
         case "mixed":
             return "⚠️";
-        case "na":
-            return "";
+        case "NA":
+            return "NA";
+        case "descriptive only":
+           return "";
+        case "Statistically successful but flawed":
+           return "";
+        case "uninformative":
+           return "";
+
         default:
             return "";
+        
     }
 }
 
