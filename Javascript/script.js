@@ -1,6 +1,7 @@
 
 ////////// Fetch data from API/////////////
-const API_URL = "https://ouj1xoiypb.execute-api.eu-central-1.amazonaws.com/v1/original-lookup";
+// const API_URL = "https://ouj1xoiypb.execute-api.eu-central-1.amazonaws.com/v1/original-lookup";
+const API_URL = "https://5waa6mryb6.execute-api.eu-central-1.amazonaws.com/v1/original-lookup";
 
 const doiInput = document.getElementById("doiInput");
 const fetchBtn = document.getElementById("fetchBtn");

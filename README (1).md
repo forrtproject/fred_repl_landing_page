@@ -5,7 +5,7 @@
 A simple, responsive landing page to display metadata and connections between original and replicated studies.
 
 ## Overview
-This tool allows users to check whether a scientific study has been replicated by entering its DOI. It fetches metadata from the FReD API, displays original and replication study details, and visualizes relationships using a network diagram.
+This tool allows users to check whether a scientific study has been replicated by entering its DOI. It fetches metadata from the FReD API, displays original and replication study details.
 
 ## Roadmap
 
