@@ -25,6 +25,7 @@ export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
         }
 
         setIsLoading(true);
+        setDois(null);
 
         const params = q.split(',').map(doi => doi.trim()).filter(doi => doi !== '');
         
@@ -54,27 +55,6 @@ export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
         // Cleanup function to clear timeout if searchTerm changes before timeout completes
         return () => clearTimeout(timeoutId);
     });
-
-    createEffect(() => {
-        const ds = dois();
-        if (ds && ds.length === 0) {
-            setEmptyResults(true);
-        } else if (ds && ds.length > 0) {
-            let empty = true;
-            Object.values(ds).forEach(d => {
-                if (d.results !== null) {
-                    for (const key in d.results) {
-                        if (d.results[key].candidate !== null) {
-                            empty = false;
-                            break;
-                        }
-                    }
-                }
-            });
-            setEmptyResults(empty);
-        }
-    });
-    
     return (
         <div class="p-4">
             <h2 class="text-lg font-bold mb-2">Search for Replications</h2>
@@ -87,8 +67,8 @@ export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
             <Show when={dois() !== null && !isLoading()}>
                 {
                     dois()?.map((d, i, arr) => (
-                        Object.values(d.results).map((res) => (
-                            <ReplicationSummary defaultOpen={i === (arr.length - 1)} data={res} />
+                        Object.entries(d.results).map(([key, res]) => (
+                            <ReplicationSummary q={key} defaultOpen={i === (arr.length - 1)} data={res} />
                         ))
                     ))
                 }

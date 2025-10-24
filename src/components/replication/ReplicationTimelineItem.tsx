@@ -11,7 +11,9 @@ export const ReplicationTimelineItem = (props: ReplicationTimelineItemProps) => 
     return (
         <div class="collapse collapse-plus bg-base-100 border border-base-300">
             <input type="radio" name="my-accordion-1" {...defaultProps} />
-            <div class={`collapse-title font-semibold ${bgs[props.status || "blank"]}`}>{props.doi}</div>
+            <div class={`collapse-title font-semibold ${bgs[props.status || "blank"]}`}>
+                <button class="text-left btn btn-ghost">{props.doi}</button>
+            </div>
             <div class="collapse-content text-sm">
                 {props.children}
             </div>
