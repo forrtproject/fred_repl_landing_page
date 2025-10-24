@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run copy-index2",
     "build:gh-pages": "BUILD_ENV=gh-pages && npm run build",
+    "copy-index2": "node scripts/copy-index2.js",
+    "copy-index2-only": "node scripts/copy-index2.js",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"

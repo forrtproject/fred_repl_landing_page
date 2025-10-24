@@ -18,7 +18,8 @@ function App() {
             <ul
               tabindex="-1"
               class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-              <li><a href="/">Home</a></li>
+              <li><a href="./">Home</a></li>
+              <li><a href="./index2.html" target='_blank'>Index 2</a></li>
               <li><a href="https://forrt.org/about/us/" target="_blank">About</a></li>
               <li><a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a></li>
               <li><a href="#">Contact</a></li>
@@ -40,7 +41,8 @@ function App() {
         <div class="navbar-end">
           <div class="hidden lg:flex">
             <ul class="menu menu-horizontal px-1">
-              <li><a href="/">Home</a></li>
+              <li><a href="./">Home</a></li>
+              <li><a href="./index2.html" target='_blank'>Index 2</a></li>
               <li><a href="https://forrt.org/about/us/" target="_blank">About</a></li>
               <li><a href="https://forrt.org/apps/fred_explorer.html">FReeD Explorer</a></li>
               <li><a href="#">Contact</a></li>

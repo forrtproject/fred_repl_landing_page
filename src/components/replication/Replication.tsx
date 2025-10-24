@@ -32,7 +32,7 @@ export const Replication = (props: ReplicationProps) => {
                 <div class={`mt-2 ${badgeBgs[props.outcome || 'uninformative']} h-2 w-2 min-w-2 rounded-full`}></div>
                 <div class="flex flex-col gap-4">
                     <h2 class="text-sm font-bold">{props.title}</h2>
-                    <p class="text-sm"><MarkdownToHtml text={props.appaRef || ''} /></p>
+                    <p class="text-sm academic-text reference"><MarkdownToHtml text={props.appaRef || ''} /></p>
                 </div>
             </div>
         </div>

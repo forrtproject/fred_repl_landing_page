@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css?family=Domine:400,400italic,700&display=swap');
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 @plugin "daisyui" {
@@ -33,12 +34,44 @@
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
   --breakpoint-xl: 1200px;
-  --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-family-sans-serif: "EB Garamond", "Century Schoolbook", "New Century Schoolbook", "Century", "Book Antiqua", "Bookman Old Style", Georgia, "Times New Roman", serif;
   --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-family-academic: 'Domine', serif;
 
 
   --color-primary: var(--primary);
   --color-secondary: var(--secondary);
   --color-neutral: var(--neutral);
   --color-white: var(--white);
+}
+
+/* Academic reference styling */
+.reference em {
+  font-style: italic;
+  font-weight: normal;
+}
+
+.reference strong {
+  font-weight: 600;
+  font-style: normal;
+}
+
+/* Journal names should be italic, not bold */
+em {
+  font-style: italic;
+  font-weight: normal;
+}
+
+/* Academic text styling */
+.academic-text {
+  font-family: var(--font-family-academic);
+  line-height: 1.6;
+}
+
+.academic-text em {
+  font-style: italic;
+}
+
+.academic-text strong {
+  font-weight: 600;
 }
