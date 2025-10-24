@@ -20,10 +20,10 @@ export const markdownToHtml = (text: string): string => {
     '<strong>$1</strong>'
   );
   
-  // Convert italic/bold *text* to <strong>text</strong>
+  // Convert italic *text* to <em>text</em> for journal names
   result = result.replace(
     /\*([^*]+)\*/g,
-    '<strong>$1</strong>'
+    '<em>$1</em>'
   );
   
   return result;
