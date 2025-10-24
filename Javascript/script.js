@@ -129,7 +129,7 @@ replications.forEach(r => {
 
 
 
-
+// //////Replication Summary //////////
 
     const summaryText = `${replications.length} replications found: ${counts.success}  success, ${counts.failure}  failure, ${counts.mixed}  mixed`;
 
@@ -163,6 +163,8 @@ replications.forEach(r => {
         <td>${rep.year || "N/A"}</td>
         <td><a href="https://doi.org/${rep.doi}" target="_blank">${rep.doi}</a></td>
         <td>${icon} ${rep.outcome}</td>
+      
+
         <td><a href="${pubpeerLink}" target="_blank">PubPeer</a></td>
         <td><a href="${flagLink}">Flag Issue</a></td>
       </tr>
@@ -177,9 +179,9 @@ replications.forEach(r => {
 function getOutcomeIcon(outcome) {
     switch (outcome) {
         case "success":
-            return '<img src="/icons/correct.png" alt="Success" width="20">';
+            return '<img src="../icons/correct.png" alt="Success" width="20">';
         case "failure":
-            return '<img src="/icons/failure.png" alt="Failure" width="20">';
+            return '<img src="../icons/failure.png" alt="Failure" width="20">';
         case "mixed":
             return "⚠️";
         case "NA":
