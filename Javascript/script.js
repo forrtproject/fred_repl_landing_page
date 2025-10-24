@@ -109,7 +109,7 @@ function renderReplications(replications, originalDOI) {
     }
 
 
-const counts = { success: 0, mixed: 0, failure: 0 };
+const counts = { success: 0, mixed: 0, failure: 0,};
 
 replications.forEach(r => {
   const rawOutcome = (r.outcome || "").toLowerCase().trim();
@@ -183,7 +183,7 @@ function getOutcomeIcon(outcome) {
         case "mixed":
             return "⚠️";
         case "na":
-            return "NA";
+            return "";
         default:
             return "";
     }
