@@ -5,6 +5,7 @@ import type { DOIAPIResponse } from "../../@types";
 import { ReplicationSummary } from "./ReplicationSummary";
 import { Skeleton } from "../Skeleton";
 import { query } from "../../utils/http";
+import { ResearchNotFound } from "./ResearchNotFount";
 
 type ReplicationSearchPanelProps = {
     onSuccess?: (data: DOIAPIResponse[]) => void;
@@ -13,6 +14,7 @@ export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
     const [searchTerm, setSearch] = createSignal(query.get('doi') || '');
     const [doi, setDoi] = createSignal<DOIAPIResponse | null>(null);
     const [isLoading, setIsLoading] = createSignal(false);
+    const [emptyResults, setEmptyResults] = createSignal(false);
     
     createEffect(() => {
         const q = searchTerm();
@@ -26,14 +28,21 @@ export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
         
         // Debounce the API call by 1 second
         const timeoutId = setTimeout(() => {
+            setEmptyResults(false);
             fetchDOIInfo(q).then(data => {
                 console.log(data);
                 setDoi(data);
                 props.onSuccess?.([data]);
                 setIsLoading(false);
+                if (!data.results || Object.keys(data.results).length === 0) {
+                    setEmptyResults(true);
+                } else if (data.results && Object.keys(data.results).length > 0) {
+                    Object.values(data.results).every(result => result == null || result?.candidate == null) ? setEmptyResults(true) : setEmptyResults(false);
+                }
             }).catch(error => {
                 console.error('Error fetching DOI info:', error);
                 setIsLoading(false);
+                setEmptyResults(true);
             });
         }, 300);
 
@@ -54,6 +63,9 @@ export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
                 {
                     Object.values(doi()?.results ?? {}).map(result => <ReplicationSummary data={result} />)
                 }
+            </Show>
+            <Show when={emptyResults() && searchTerm().trim() !== '' && !isLoading()}>
+                <ResearchNotFound />
             </Show>
         </div>
     );
