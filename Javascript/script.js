@@ -202,8 +202,8 @@ function showFallback(doi) {
 function renderGraph(data) {
   d3.select("#replicationGraph").selectAll("*").remove(); // Clear old graph
 
-  const width = 950;
-  const height = 650;
+  const width = 1200;
+  const height = 550;
 
   const svg = d3.select("#replicationGraph")
     .append("svg")
@@ -226,7 +226,7 @@ function renderGraph(data) {
     .selectAll("circle")
     .data(data.nodes)
     .enter().append("circle")
-    .attr("r", d => d.group === "original" ? 20 : 10)
+    .attr("r", d => d.group === "original" ? 30 : 15)
     .attr("fill", d => d.group === "original" ? "#1f77b4" : "#ff7f0e")
     .call(drag(simulation));
 

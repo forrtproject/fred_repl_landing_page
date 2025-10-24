@@ -243,3 +243,10 @@ th {
 .replication-card {
   border-left: 5px solid #2196F3;
 }
+
+/* Graph diagram section */
+
+#replicationGraph{
+  justify-content: center;
+  text-align: center;
+}
