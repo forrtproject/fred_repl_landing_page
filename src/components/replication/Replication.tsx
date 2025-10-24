@@ -1,4 +1,5 @@
 import type { Author } from "../../@types";
+import { badgeBgs, bgs } from "../../configs";
 import { MarkdownToHtml } from "../../utils/markdown";
 
 type ReplicationProps = {
@@ -9,23 +10,6 @@ type ReplicationProps = {
     doi?: string | null;
 };
 export const Replication = (props: ReplicationProps) => {
-    const badgeBgs = {
-        successful: 'bg-success',
-        failed: 'bg-error',
-        partial: 'bg-warning',
-        mixed: 'bg-warning',
-        uninformative: 'bg-gray-400',
-        blank: 'bg-gray-200',
-    }
-
-    const bgs = {
-        successful: 'bg-green-50',
-        failed: 'bg-red-50',
-        partial: 'bg-orange-50',
-        mixed: 'bg-yellow-50',
-        uninformative: 'bg-gray-100',
-        blank: 'bg-gray-50',
-    }
     return props.authors ? (
         <div class={`flex p-4 rounded-md flex-col flex-1 ${bgs[props.outcome || 'mixed']}`}>
             <div class="inline-flex gap-2">

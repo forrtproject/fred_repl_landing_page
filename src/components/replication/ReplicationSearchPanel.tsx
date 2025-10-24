@@ -1,6 +1,6 @@
 import { createEffect, createSignal, Show  } from "solid-js";
 import { Search } from "../Search";
-import { fetchDOIInfo } from "../../api/backend";
+import { fetchMultipleDOIInfo } from "../../api/backend";
 import type { DOIAPIResponse } from "../../@types";
 import { ReplicationSummary } from "./ReplicationSummary";
 import { Skeleton } from "../Skeleton";
@@ -12,32 +12,37 @@ type ReplicationSearchPanelProps = {
 };
 export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
     const [searchTerm, setSearch] = createSignal(query.get('doi') || '');
-    const [doi, setDoi] = createSignal<DOIAPIResponse | null>(null);
+    const [dois, setDois] = createSignal<DOIAPIResponse[] | null>(null);
     const [isLoading, setIsLoading] = createSignal(false);
     const [emptyResults, setEmptyResults] = createSignal(false);
     
     createEffect(() => {
         const q = searchTerm();
         if (q.trim() === '') {
-            setDoi(null);
+            setDois(null);
             setIsLoading(false);
             return;
         }
 
         setIsLoading(true);
+
+        const params = q.split(',').map(doi => doi.trim()).filter(doi => doi !== '');
         
         // Debounce the API call by 1 second
         const timeoutId = setTimeout(() => {
             setEmptyResults(false);
-            fetchDOIInfo(q).then(data => {
-                console.log(data);
-                setDoi(data);
-                props.onSuccess?.([data]);
-                setIsLoading(false);
-                if (!data.results || Object.keys(data.results).length === 0) {
+            fetchMultipleDOIInfo(params).then(res => {
+                if (res.length === 0) {
                     setEmptyResults(true);
-                } else if (data.results && Object.keys(data.results).length > 0) {
-                    Object.values(data.results).every(result => result == null || result?.candidate == null) ? setEmptyResults(true) : setEmptyResults(false);
+                } else {
+                    res.forEach(r => {
+                        r.data.then(data => {
+                            console.log(data);
+                            setDois(prev => [...(prev || []), data]);
+                            props.onSuccess?.([data]);
+                            setIsLoading(false);
+                        });
+                    });
                 }
             }).catch(error => {
                 console.error('Error fetching DOI info:', error);
@@ -49,6 +54,26 @@ export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
         // Cleanup function to clear timeout if searchTerm changes before timeout completes
         return () => clearTimeout(timeoutId);
     });
+
+    createEffect(() => {
+        const ds = dois();
+        if (ds && ds.length === 0) {
+            setEmptyResults(true);
+        } else if (ds && ds.length > 0) {
+            let empty = true;
+            Object.values(ds).forEach(d => {
+                if (d.results !== null) {
+                    for (const key in d.results) {
+                        if (d.results[key].candidate !== null) {
+                            empty = false;
+                            break;
+                        }
+                    }
+                }
+            });
+            setEmptyResults(empty);
+        }
+    });
     
     return (
         <div class="p-4">
@@ -59,9 +84,13 @@ export const ReplicationSearchPanel = (props: ReplicationSearchPanelProps) => {
                     <Skeleton />
                 </section>
             </Show>
-            <Show when={doi() !== null && !isLoading()}>
+            <Show when={dois() !== null && !isLoading()}>
                 {
-                    Object.values(doi()?.results ?? {}).map(result => <ReplicationSummary data={result} />)
+                    dois()?.map((d, i, arr) => (
+                        Object.values(d.results).map((res) => (
+                            <ReplicationSummary defaultOpen={i === (arr.length - 1)} data={res} />
+                        ))
+                    ))
                 }
             </Show>
             <Show when={emptyResults() && searchTerm().trim() !== '' && !isLoading()}>

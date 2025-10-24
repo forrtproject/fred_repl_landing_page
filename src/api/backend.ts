@@ -10,3 +10,7 @@ export const fetchDOIInfo = async (doi: string) => {
 
   return response.data;
 };
+
+export const fetchMultipleDOIInfo = async (dois: string[]) => {
+  return dois.map(doi => ({ doi, data: fetchDOIInfo(doi) }));
+}
