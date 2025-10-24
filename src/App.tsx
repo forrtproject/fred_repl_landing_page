@@ -2,8 +2,11 @@ import repResearch from '/forrt_text.svg'
 import { Footer } from './components/Footer'
 import forrt from './assets/FORRT.svg'
 import { ReplicationSearchPanel } from './components/replication/ReplicationSearchPanel'
+import { createSignal } from 'solid-js';
+import type { DOIAPIResponse } from './@types';
 
 function App() {
+  const [doi, setDoi] = createSignal<DOIAPIResponse[] | null>(null);
   return (
     <div class="bg-neutral min-h-screen">
       <div class="navbar bg-neutral text-neutral-content shadow-sm">
@@ -46,26 +49,30 @@ function App() {
           <a class="btn btn-secondary">Contact Us</a>
         </div>
       </div>
-      <div class="hero bg-base-200 ">
-        <div class="hero-content flex-col lg:flex-row">
-          <div>
-            <div class="flex w-64 shadow-sm">
-              <img
-                src={repResearch}
-                alt="Replication Research"
-                class="rounded-lg"
-              />
+      {
+        doi() == null ? (
+          <div class="hero bg-base-200 ">
+            <div class="hero-content flex-col lg:flex-row">
+              <div>
+                <div class="flex w-64 shadow-sm">
+                  <img
+                    src={repResearch}
+                    alt="Replication Research"
+                    class="rounded-lg"
+                  />
+                </div>
+                <h1 class="text-5xl font-bold">Replication Summary</h1>
+                <p class="py-6">
+                  Replication is essential to scientific progress. Use this tool to check whether a study has been replicated, explore the outcomes, and contribute to the growing ecosystem of reproducible research.
+                  If you spot missing data or want to suggest a new replication, we welcome your input!
+                </p>
+              </div>
             </div>
-            <h1 class="text-5xl font-bold">Replication Summary</h1>
-            <p class="py-6">
-              Replication is essential to scientific progress. Use this tool to check whether a study has been replicated, explore the outcomes, and contribute to the growing ecosystem of reproducible research.
-              If you spot missing data or want to suggest a new replication, we welcome your input!
-            </p>
           </div>
-        </div>
-      </div>
+        ) : null
+      }
       <div class="bg-base-200 min-h-[40vh] pb-8">
-        <ReplicationSearchPanel />
+        <ReplicationSearchPanel onSuccess={dois => setDoi(dois)} />
       </div>    
       <Footer />
     </div>
