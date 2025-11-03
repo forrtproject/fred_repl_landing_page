@@ -1,18 +1,51 @@
 # fred_repl_landing_page
+
+![GitHub stars](https://img.shields.io/github/stars/Ifeanyi55/fred_repl_landing_page)
+![GitHub forks](https://img.shields.io/github/forks/Ifeanyi55/fred_repl_landing_page)
+![GitHub issues](https://img.shields.io/github/issues/Ifeanyi55/fred_repl_landing_page)
+![GitHub commits](https://img.shields.io/github/last-commit/Ifeanyi55/fred_repl_landing_page)
+
 Generate landing pages that summarise and link to replication attempts given an original DOI
 
-## Flow Chart
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Workflow Summary](#workflow-summary)
+- [Getting Started](#getting-started)
+- [Contributing](#contributing)
+- [Available Scripts](#available-scripts)
+- [Deployment](#deployment)
+
+## Overview
+
+This tool allows users to check whether a scientific study has been replicated by entering its DOI. It fetches metadata from the FReD API, displays original and replication study details, and visualizes relationships using a network diagram.
+
+## Features
+
+- DOI input field with fallback message
+- Responsive layout for desktop and mobile
+- Placeholder sections for metadata display
+- Suggested visualization using Highcharts (ResearchRabbit-style)
+
+## Workflow Summary
+
+1. **User Input**: The user enters a DOI in the input field.
+2. **API Request**: The tool sends a request to the FReD API.
+3. **Response Handling**:
+   - If data is found, the original study metadata is rendered, replication studies are listed in a summary table, and a D3-based graph visualizes relationships between studies.
+   - If no data is found, a fallback message is shown with a link to suggest a new replication.
+4. **Graph Rendering**: The graph shows the relationship between the original and replication in a visualization.
+
+## Workflow Diagram
+
+The following diagram illustrates the workflow of the project:
 
 ![Flow Chart](project-assets/Flow%20chart.png)
 
-## Example Landing Page
+## Getting Started
 
-[View Example Landing Page Design](https://figma.com/design/u46XGX6Uq4D3FPhBRzbN5V/Replication-Summary?t=mq95eytelNppAD5j-0)
-
-
-The landing is built with solid js. Learn more on the [Solid Website](https://solidjs.com).
-
-## To Contribute
+To get started, you'll need to install the dependencies:
 
 ```bash
 $ npm install # or pnpm install or yarn install
@@ -35,6 +68,11 @@ It correctly bundles Solid in production mode and optimizes the build for the be
 The build is minified and the filenames include the hashes.<br>
 Your app is ready to be deployed!
 
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request with your changes.
+
 ## Deployment
 
+Details on how to deploy this project will be added soon.
 
