@@ -1,3 +1,5 @@
+import { stripDoiUrl } from "./doi";
+
 // For general reference text (paste / RIS / BIB): stop at < to avoid XML tags
 // from embedded metadata. A slash is only treated as part of the suffix when
 // the next segment contains digits/underscores/brackets — pure [A-Za-z-]
@@ -105,7 +107,7 @@ export function parseReferences(text: string): ParsedReference[] {
   // Fast path: text is just a list of raw DOIs (one per line / comma-separated)
   const doiOnlyLines = text
     .split(/[\r\n,;]+/)
-    .map((s) => s.trim())
+    .map((s) => stripDoiUrl(s.trim()))
     .filter((s) => /^10\.\d{4,}\//.test(s));
 
   const rawRefs = splitIntoReferences(text);
