@@ -1,7 +1,7 @@
 import { createEffect, createSignal, For, Show } from "solid-js";
 import type { OriginalPaper, FormattedDOIResult } from "../../@types";
 import { formatReplicationResponse } from "../../api/formatter";
-import { renderAuthors, na } from "../../utils/formatter";
+import { formatAuthors } from "../../utils/formatter";
 import { smoothScrollIntoView } from "../../utils/smoothScroll";
 
 type TypeFilter = "original" | "replication";
@@ -362,10 +362,9 @@ footer { margin-top: 2rem; padding-top: 0.6rem; border-top: 1px solid #ddd; font
                 />
                 <div class="sli-body">
                   <div class="sli-title">{entry.rep.title || entry.doi}</div>
-                  <div class="sli-meta">
-                    {renderAuthors(entry.rep.authors)} &middot;{" "}
-                    {entry.rep.year || na("Year")}
-                  </div>
+                  <Show when={[formatAuthors(entry.rep.authors), entry.rep.year].filter(Boolean).join(" · ")}>
+                    {(meta) => <div class="sli-meta">{meta()}</div>}
+                  </Show>
                   <div class="sli-pills">
                     <For each={entry.paper.types || []}>
                       {(type) => (

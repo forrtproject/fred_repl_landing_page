@@ -6,7 +6,6 @@ import { ResearchNotFound } from "./ResearchNotFount";
 import { MarkdownToHtml } from "../../utils/markdown";
 import { ReplicationSection } from "./ReplicationSection";
 import { EyeOpenIcon } from "../icons/eye-open";
-import { na } from "../../utils/formatter";
 
 type ReplicationSummaryProps = {
     data?: OriginalPaper;
@@ -101,10 +100,10 @@ const SummaryHeader = (props: { rep: FormattedDOIResult; stats?: FormattedDOIRes
                     ) : null
                 }
             </div>
-            <div class="mt-2 text-lg font-semibold">{props.rep.title || na("Title")}</div>
+            {props.rep.title ? <div class="mt-2 text-lg font-semibold">{props.rep.title}</div> : null}
             <div class="mt-2 text-sm text-neutral/70 flex flex-wrap gap-2">
-                <span>{props.rep.journal || na("Journal")}</span>
-                <span>{props.rep.year || na("Year")}</span>
+                {props.rep.journal ? <span>{props.rep.journal}</span> : null}
+                {props.rep.year ? <span>{props.rep.year}</span> : null}
                 {props.rep.doi ? (
                     <a class="link" href={`https://doi.org/${props.rep.doi}`} target="_blank" rel="noreferrer">{props.rep.doi}</a>
                 ) : null}
