@@ -1,6 +1,6 @@
 import { createSignal, For } from "solid-js";
 import type { ReplicationItem } from "../../@types";
-import { renderAuthors, na } from "../../utils/formatter";
+import { authorYearLine } from "../../utils/formatter";
 
 type ReplicationItemCardProps = {
   item: ReplicationItem;
@@ -58,6 +58,10 @@ const ExternalLinkIcon = () => (
 export const ReplicationItemCard = (props: ReplicationItemCardProps) => {
   const [expanded, setExpanded] = createSignal(false);
   const badges = () => parseOutcomeBadges(props.item.outcome);
+  const meta = () =>
+    [authorYearLine(props.item.authors, props.item.year), props.item.journal]
+      .filter(Boolean)
+      .join(" · ");
 
   return (
     <div class="rep-item">
@@ -68,11 +72,8 @@ export const ReplicationItemCard = (props: ReplicationItemCardProps) => {
           </For>
         </div>
         <div class="ri-body">
-          <div class="ri-title">{props.item.title || na("Title")}</div>
-          <div class="ri-meta">
-            {renderAuthors(props.item.authors)} ({props.item.year || na("Year")}) &middot;{" "}
-            {props.item.journal || na("Journal")}
-          </div>
+          {props.item.title ? <div class="ri-title">{props.item.title}</div> : null}
+          {meta() ? <div class="ri-meta">{meta()}</div> : null}
           {props.item.doi ? (
             <a
               class="ri-doi"

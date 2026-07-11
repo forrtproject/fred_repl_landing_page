@@ -1,7 +1,7 @@
 import { createSignal, createEffect, For, Show, onCleanup } from "solid-js";
 import type { OriginalPaper, ReplicationItem } from "../../@types";
 import { formatReplicationResponse } from "../../api/formatter";
-import { renderAuthors, na } from "../../utils/formatter";
+import { authorYearLine } from "../../utils/formatter";
 import { ReplicationItemCard } from "./ReplicationItemCard";
 import { fetchPdfUrl } from "../../api/unpaywall";
 import { CitationImpactModal } from "./CitationImpactModal";
@@ -230,7 +230,7 @@ export const DetailView = (props: DetailViewProps) => {
           </div>
           {/* Desktop: title with tags + share inline */}
           <div class="dh-title-row">
-            <h1 class="dh-title">{rep().title || na("Title")}</h1>
+            <h1 class="dh-title">{rep().title}</h1>
             <div class="dh-title-actions">
               <For each={props.paper.types || []}>
                 {(type) => (
@@ -248,9 +248,11 @@ export const DetailView = (props: DetailViewProps) => {
               </button>
             </div>
           </div>
-          <div class="dh-authors">
-            {renderAuthors(rep().authors)} ({rep().year || na("Year")})
-          </div>
+          <Show when={authorYearLine(rep().authors, rep().year)}>
+            <div class="dh-authors">
+              {authorYearLine(rep().authors, rep().year)}
+            </div>
+          </Show>
           <Show when={rep().data?.journal}>
             <div class="dh-journal">
               {rep().data!.journal}

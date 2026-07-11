@@ -1,9 +1,7 @@
 import type { Author } from "../@types";
 
-export const NA_MARKER = "__NOT_AVAILABLE__";
-
 export const formatAuthors = (authors?: Author[]) => {
-    if (!Array.isArray(authors) || authors.length === 0) return NA_MARKER;
+    if (!Array.isArray(authors) || authors.length === 0) return "";
     const names = authors
         .map(author => {
             const family = author.family || "";
@@ -11,14 +9,15 @@ export const formatAuthors = (authors?: Author[]) => {
             return family ? `${family}${given}` : author.given || "";
         })
         .filter(name => name.length > 0);
-    if (!names.length) return NA_MARKER;
+    if (!names.length) return "";
     if (names.length <= 3) return names.join("; ");
     return `${names.slice(0, 3).join("; ")}; et al.`;
 };
 
-export const na = (label: string) => <span class="not-available">{label} Not Available</span>;
+export const renderAuthors = (authors?: Author[]) => formatAuthors(authors);
 
-export const renderAuthors = (authors?: Author[]) => {
-    const result = formatAuthors(authors);
-    return result === NA_MARKER ? na("Author Name") : result;
+/** "Authors (Year)" — omitting whichever part is missing; empty string when both are. */
+export const authorYearLine = (authors?: Author[], year?: string | number) => {
+    const parts = [formatAuthors(authors), year ? `(${year})` : ""];
+    return parts.filter(Boolean).join(" ");
 };
