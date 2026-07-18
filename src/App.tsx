@@ -171,6 +171,16 @@ function App() {
   // Monotonic search id; a resolving response is ignored if a newer search started.
   let searchGeneration = 0;
 
+  // Abandon any in-flight search so its (possibly slow) response can't repopulate
+  // state the user has since cleared. Bumping the generation makes both the
+  // success and error handlers of the outstanding request bail.
+  const invalidateSearches = () => {
+    ++searchGeneration;
+    debouncedFuzzySearch.cancel();
+    debouncedDoiSearch.cancel();
+    setIsLoading(false);
+  };
+
   const visibilityMap = new Map<string, number>();
 
   const pickActive = () => {
@@ -267,7 +277,7 @@ function App() {
     setTags(newTags);
     syncUrl(newTags);
     if (newTags.length === 0) {
-      debouncedDoiSearch.cancel();
+      invalidateSearches();
       setResults({});
       setSelectedDoi(null);
       setHasSearched(false);
@@ -315,6 +325,7 @@ function App() {
     if (currentMode === "advanced") {
       clearAdvancedSearch();
     }
+    invalidateSearches();
     setTags([]);
     setResults({});
     setSelectedDoi(null);
@@ -329,6 +340,7 @@ function App() {
       yearFrom: undefined,
       yearTo: undefined,
       outcomes: undefined,
+      paperTypes: undefined,
     });
   };
 
@@ -496,6 +508,10 @@ function App() {
     const advMustAllParam = String(searchParams.mustAll || "");
     const advMustAnyParam = String(searchParams.mustAny || "");
     const advMustNoneParam = String(searchParams.mustNone || "");
+    const advOutcomesParam = String(searchParams.outcomes || "");
+    const advPaperTypesParam = String(searchParams.paperTypes || "");
+    const advYearFromParam = String(searchParams.yearFrom || "");
+    const advYearToParam = String(searchParams.yearTo || "");
     const currentTags = doi
       ? doi
           .split(",")
@@ -521,24 +537,28 @@ function App() {
         setSearchMode("fuzzy");
         doFuzzySearch(q);
       }
-    } else if (advMustAllParam || advMustAnyParam || advMustNoneParam) {
+    } else if (
+      advMustAllParam ||
+      advMustAnyParam ||
+      advMustNoneParam ||
+      advOutcomesParam ||
+      advPaperTypesParam ||
+      advYearFromParam ||
+      advYearToParam
+    ) {
       if (skipAdvancedEffect) {
         skipAdvancedEffect = false;
       } else {
         const mustAll = advMustAllParam ? advMustAllParam.split("|") : [];
         const mustAny = advMustAnyParam ? advMustAnyParam.split("|") : [];
         const mustNone = advMustNoneParam ? advMustNoneParam.split("|") : [];
-        const yearFrom = searchParams.yearFrom
-          ? parseInt(String(searchParams.yearFrom))
-          : 1950;
-        const yearTo = searchParams.yearTo
-          ? parseInt(String(searchParams.yearTo))
+        const yearFrom = advYearFromParam ? parseInt(advYearFromParam) : 1950;
+        const yearTo = advYearToParam
+          ? parseInt(advYearToParam)
           : new Date().getFullYear();
-        const outcomes = searchParams.outcomes
-          ? String(searchParams.outcomes).split("|")
-          : [];
-        const paperTypes = searchParams.paperTypes
-          ? String(searchParams.paperTypes).split("|")
+        const outcomes = advOutcomesParam ? advOutcomesParam.split("|") : [];
+        const paperTypes = advPaperTypesParam
+          ? advPaperTypesParam.split("|")
           : [];
         setAdvMustAll(mustAll);
         setAdvMustAny(mustAny);
@@ -582,6 +602,7 @@ function App() {
       if (ignoreNextReset) {
         ignoreNextReset = false;
       } else {
+        invalidateSearches();
         setTags([]);
         setInputValue("");
         setResults({});
@@ -632,6 +653,7 @@ function App() {
             if (q === "") {
               debouncedFuzzySearch.cancel();
               if (tags().length === 0) {
+                invalidateSearches();
                 setResults({});
                 setSelectedDoi(null);
                 setHasSearched(false);
