@@ -2,10 +2,14 @@ import type { ParsedReference } from "./referenceParser";
 import { extractDoisDirect } from "./referenceParser";
 
 // OSF GUIDs are 5-character alphanumeric. URLs may namespace the GUID behind
-// path segments (e.g. /preprints/psyarxiv/abcde) or suffix it with /download,
-// so take the last path segment that looks like a GUID rather than the first.
+// route words (e.g. /preprints/psyarxiv/abcde) or suffix it with sub-resources
+// (e.g. /abcde/files/xyz). Scan from the START and take the FIRST segment that
+// looks like a GUID, skipping known route words. Provider names in the
+// namespaced form (e.g. "psyarxiv") are longer than 5 chars, so the GUID is the
+// first 5-char match; the skip-list guards route words that happen to be 5 chars
+// (e.g. "files").
 const OSF_GUID_RE = /^[a-z0-9]{5}$/i;
-const OSF_NON_GUID_SEGMENTS = new Set(["preprints", "download"]);
+const OSF_NON_GUID_SEGMENTS = new Set(["preprints", "download", "files"]);
 
 function extractOsfGuid(url: string): string | null {
   const afterHost = url.split(/osf\.io\//i)[1];
@@ -15,8 +19,7 @@ function extractOsfGuid(url: string): string | null {
   const path = afterHost.split(/[?#]/)[0]!;
   const segments = path.split("/").filter(seg => seg !== "");
 
-  for (let i = segments.length - 1; i >= 0; i -= 1) {
-    const seg = segments[i]!;
+  for (const seg of segments) {
     if (OSF_NON_GUID_SEGMENTS.has(seg.toLowerCase())) continue;
     if (OSF_GUID_RE.test(seg)) return seg;
   }

@@ -70,7 +70,9 @@ export function parseDoiPaste(raw: string): DoiPasteResult {
   // that prose like "10.1234/abc and some notes" (spaces, no newline) is not
   // silently glued into a garbage DOI.
   const prefixCount = (raw.match(DOI_PREFIX_RE) || []).length;
-  if (prefixCount <= 1 && /[\r\n]/.test(raw)) {
+  // Line breaks in the broad sense: CR/LF plus form feed and the Unicode
+  // line/paragraph separators a PDF copy may emit.
+  if (prefixCount <= 1 && /[\r\n\f\u2028\u2029]/.test(raw)) {
     const collapsed = stripDoiUrl(raw.replace(/[\s,;]+/g, "").trim());
     if (collapsed.startsWith("10.")) return { kind: "single", doi: collapsed };
   }

@@ -74,9 +74,12 @@ export class Http {
 
     // Only advertise a JSON body Content-Type when there actually is a body;
     // sending it on GETs triggers unnecessary CORS preflights. An explicit
-    // caller-provided Content-Type is preserved.
-    const hasBody = data !== undefined && data !== null;
-    if (hasBody && mergedHeaders['Content-Type'] === undefined) {
+    // caller-provided Content-Type (any header casing) is preserved.
+    const hasBody = data !== undefined;
+    const hasContentType = Object.keys(mergedHeaders).some(
+      (key) => key.toLowerCase() === 'content-type',
+    );
+    if (hasBody && !hasContentType) {
       mergedHeaders['Content-Type'] = 'application/json';
     }
 
@@ -90,7 +93,7 @@ export class Http {
       const response = await fetch(fullURL, {
         method,
         headers: mergedHeaders,
-        body: data ? JSON.stringify(data) : undefined,
+        body: hasBody ? JSON.stringify(data) : undefined,
         signal: controller.signal,
       });
 

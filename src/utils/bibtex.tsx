@@ -19,6 +19,11 @@ const bracesArePair = (value: string): boolean => {
   let depth = 0;
   for (let i = 0; i < value.length; i += 1) {
     const char = value[i];
+    // Count backslashes immediately before this char; an odd run means the
+    // brace is escaped (\{ or \}) and therefore not structural.
+    let backslashes = 0;
+    for (let j = i - 1; j >= 0 && value[j] === "\\"; j -= 1) backslashes += 1;
+    if (backslashes % 2 === 1) continue;
     if (char === "{") depth += 1;
     else if (char === "}") depth -= 1;
     if (depth === 0 && i < value.length - 1) return false;
