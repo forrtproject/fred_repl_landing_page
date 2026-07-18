@@ -27,14 +27,34 @@ const SEGMENTS: Segment[] = [
     { key: "partial", label: "Partial",    color: "var(--primary)"       },
 ];
 
-export const SearchOutcomesBanner = (props: SearchOutcomesBannerProps) => {
-    const segments = createMemo(() =>
-        SEGMENTS.filter(s => props.outcomes[s.key] > 0));
+type DisplaySegment = { label: string; color: string; count: number; pct: number };
 
-    const pct = (key: keyof Omit<OutcomeCounts, "total" | "categorizedTotal">) =>
-        props.outcomes.categorizedTotal > 0
-            ? (props.outcomes[key] / props.outcomes.categorizedTotal) * 100
-            : 0;
+export const SearchOutcomesBanner = (props: SearchOutcomesBannerProps) => {
+    // Widths are relative to `total` (the header count) so the bar always sums to
+    // it; the uncategorized remainder is shown as a muted grey segment.
+    const pct = (count: number) =>
+        props.outcomes.total > 0 ? (count / props.outcomes.total) * 100 : 0;
+
+    const segments = createMemo<DisplaySegment[]>(() => {
+        const shown: DisplaySegment[] = SEGMENTS
+            .filter(s => props.outcomes[s.key] > 0)
+            .map(s => ({
+                label: s.label,
+                color: s.color,
+                count: props.outcomes[s.key],
+                pct: pct(props.outcomes[s.key]),
+            }));
+        const uncategorized = props.outcomes.total - props.outcomes.categorizedTotal;
+        if (uncategorized > 0) {
+            shown.push({
+                label: "Uncategorized",
+                color: "var(--text-muted)",
+                count: uncategorized,
+                pct: pct(uncategorized),
+            });
+        }
+        return shown;
+    });
 
     return (
         <div style={{
@@ -56,11 +76,11 @@ export const SearchOutcomesBanner = (props: SearchOutcomesBannerProps) => {
                 <For each={segments()}>
                     {(s) => (
                         <div
-                            style={{ background: s.color, width: `${pct(s.key)}%`, display: "flex", "align-items": "center", "justify-content": "center" }}
-                            title={`${s.label}: ${props.outcomes[s.key]}`}
+                            style={{ background: s.color, width: `${s.pct}%`, display: "flex", "align-items": "center", "justify-content": "center" }}
+                            title={`${s.label}: ${s.count}`}
                         >
                             <span style={{ color: "white", "font-size": "11px", "font-weight": "700", "text-shadow": "0 1px 2px rgba(0,0,0,0.25)", "user-select": "none" }}>
-                                {props.outcomes[s.key]}
+                                {s.count}
                             </span>
                         </div>
                     )}
@@ -69,7 +89,7 @@ export const SearchOutcomesBanner = (props: SearchOutcomesBannerProps) => {
             <div style={{ display: "flex", width: "100%", gap: "2px", "margin-top": "4px" }}>
                 <For each={segments()}>
                     {(s) => (
-                        <div style={{ width: `${pct(s.key)}%`, "text-align": "center", overflow: "hidden" }}>
+                        <div style={{ width: `${s.pct}%`, "text-align": "center", overflow: "hidden" }}>
                             <span style={{ "font-size": "10px", "font-weight": "600", color: s.color, "white-space": "nowrap" }}>
                                 {s.label}
                             </span>

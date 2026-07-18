@@ -46,14 +46,18 @@ const ICONS: Record<ToastVariant, () => JSX.Element> = {
 
 const ToastItem = (props: ToastItemProps) => {
   const [exiting, setExiting] = createSignal(false);
+  let exitTimer: ReturnType<typeof setTimeout> | undefined;
 
   const dismiss = () => {
     setExiting(true);
-    setTimeout(() => props.onDismiss(props.toast.id), 200);
+    exitTimer = setTimeout(() => props.onDismiss(props.toast.id), 200);
   };
 
   const timer = setTimeout(dismiss, AUTO_DISMISS_MS);
-  onCleanup(() => clearTimeout(timer));
+  onCleanup(() => {
+    clearTimeout(timer);
+    if (exitTimer) clearTimeout(exitTimer);
+  });
 
   return (
     <div

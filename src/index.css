@@ -1433,6 +1433,10 @@ body {
   background: var(--warning-bg);
   color: #9a6f00;
 }
+.ri-badge.other {
+  background: var(--surface);
+  color: var(--text-muted);
+}
 .ri-badge-group {
   display: flex;
   flex-direction: row;
