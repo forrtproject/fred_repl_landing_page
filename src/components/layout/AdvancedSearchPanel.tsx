@@ -355,7 +355,8 @@ export const AdvancedSearchPanel = (props: Props) => {
 
   const canSearch = () =>
     props.state.mustAll.length > 0 || props.state.mustAny.length > 0 || props.state.mustNone.length > 0 ||
-    props.state.paperTypes.length > 0 ||
+    props.state.paperTypes.length > 0 || props.state.outcomes.length > 0 ||
+    props.state.yearFrom !== MIN_YEAR || props.state.yearTo !== MAX_YEAR ||
     pendingAll().trim().length > 0 || pendingAny().trim().length > 0 || pendingNone().trim().length > 0;
 
   const handleKey = (e: KeyboardEvent) => {
