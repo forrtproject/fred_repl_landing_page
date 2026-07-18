@@ -25,6 +25,10 @@ export function smoothScrollIntoView(
 ): void {
   const { block = "start", residualPx, residualViewports = 1 } = opts;
 
+  // Detached nodes report zeroed rects, which would scroll the container to a
+  // bogus position. Bail out — a re-render will have replaced this element.
+  if (!target.isConnected) return;
+
   // Mobile/tablet layouts make the panels `overflow: visible` and scroll the
   // page instead — the passed container isn't the scroller, so defer to the
   // native behaviour.

@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, For, on, Show } from "solid-js";
 import type { OriginalPaper, FormattedDOIResult } from "../../@types";
 import { formatReplicationResponse } from "../../api/formatter";
 import { formatAuthors } from "../../utils/formatter";
@@ -59,13 +59,23 @@ export const StudyListPanel = (props: StudyListPanelProps) => {
 
   // Keep the highlighted item visible whenever the selection changes (e.g. as
   // the right panel is scrolled). A single panel-level effect avoids waking one
-  // effect per list item on every selection change.
+  // effect per list item on every selection change. Reading the rendered list
+  // also re-fires the scroll after the list re-renders (type-filter toggle,
+  // deep-link results arriving), once the selected item has mounted.
   createEffect(() => {
+    entries();
     const doi = props.selectedDoi;
     if (!doi || !listRef) return;
     const el = itemRefs[doi];
     if (el) smoothScrollIntoView(listRef, el, { block: "nearest", residualViewports: 2 });
   });
+
+  // The checkbox selection persists across searches, so the header would keep
+  // counting DOIs no longer in the list. Reset it whenever a new result set
+  // arrives (defer so the initial mount doesn't clear a pre-seeded selection).
+  createEffect(
+    on(() => props.results, () => setSelectedDois(new Set<string>()), { defer: true }),
+  );
 
   const toggleSelect = (doi: string, e: MouseEvent) => {
     e.stopPropagation();
@@ -83,7 +93,7 @@ export const StudyListPanel = (props: StudyListPanelProps) => {
 
   const clearSelection = () => setSelectedDois(new Set<string>());
 
-  const allEntries = () =>
+  const allEntries = createMemo(() =>
     Object.entries(props.results)
       .map(([doi, paper]) => {
         const rep = formatReplicationResponse(paper);
@@ -100,13 +110,14 @@ export const StudyListPanel = (props: StudyListPanelProps) => {
       .sort((a, b) => {
         if (a.hasData === b.hasData) return 0;
         return a.hasData ? -1 : 1;
-      });
+      }),
+  );
 
-  const entries = () => {
+  const entries = createMemo(() => {
     const filter = props.typeFilter;
     if (filter === "original") return allEntries().filter((e) => e.isOriginal);
     return allEntries().filter((e) => e.isReplication);
-  };
+  });
 
   const totalCount = () => Object.keys(props.results).length;
   const originalCount = () => allEntries().filter((e) => e.isOriginal).length;

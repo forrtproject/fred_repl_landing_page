@@ -211,14 +211,42 @@ function App() {
       { root: rightPanelRef, threshold: [0, 0.1, 0.25, 0.5, 0.75, 1] },
     );
 
-    for (const [, el] of Object.entries(paperRefs)) {
-      if (el) observer.observe(el);
+    for (const [doi, el] of Object.entries(paperRefs)) {
+      // Ref callbacks fire before <For> removes old nodes, so paperRefs can
+      // still hold detached elements — prune them and only observe live ones.
+      if (!el || !el.isConnected) {
+        delete paperRefs[doi];
+        continue;
+      }
+      observer.observe(el);
     }
+  };
+
+  // Every row's ref callback requests a rebuild; coalesce them into one rebuild
+  // per render batch instead of tearing down/reconnecting the observer per row.
+  let observerRebuildPending = false;
+  const scheduleObserverSetup = () => {
+    if (observerRebuildPending) return;
+    observerRebuildPending = true;
+    queueMicrotask(() => {
+      observerRebuildPending = false;
+      setupObserver();
+    });
+  };
+
+  // A long smooth scroll can outlast a fixed timer, so keep suppressing the
+  // observer until the panel actually stops scrolling. The timer is a fallback
+  // for Safari, which does not fire `scrollend`.
+  const handleScrollEnd = () => {
+    if (!isScrollingFromClick) return;
+    isScrollingFromClick = false;
+    if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
   };
 
   onCleanup(() => {
     if (observer) observer.disconnect();
     if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
+    rightPanelRef?.removeEventListener("scrollend", handleScrollEnd);
   });
 
   const scrollToPaper = (doi: string) => {
@@ -227,7 +255,7 @@ function App() {
     if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
     scrollClickTimer = window.setTimeout(() => {
       isScrollingFromClick = false;
-    }, 800);
+    }, 1500);
     const el = paperRefs[doi];
     if (el && rightPanelRef) {
       smoothScrollIntoView(rightPanelRef, el, { block: "start", residualViewports: 3.5 });
@@ -674,7 +702,10 @@ function App() {
           classList={{
             "right-panel--scrollable": Object.keys(results()).length > 0,
           }}
-          ref={rightPanelRef}
+          ref={(el) => {
+            rightPanelRef = el;
+            el.addEventListener("scrollend", handleScrollEnd);
+          }}
         >
           <Show
             when={Object.keys(results()).length > 0}
@@ -803,7 +834,7 @@ function App() {
                     data-doi={doi}
                     ref={(el) => {
                       paperRefs[doi] = el;
-                      setupObserver();
+                      scheduleObserverSetup();
                     }}
                     class={`scroll-paper-section ${selectedDoi() === doi ? "highlighted" : ""}`}
                   >
