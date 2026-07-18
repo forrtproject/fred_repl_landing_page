@@ -169,6 +169,7 @@ function App() {
   let isScrollingFromClick = false;
   let scrollClickTimer: number | undefined;
   let observer: IntersectionObserver | undefined;
+  let disposed = false;
   let ignoreNextReset = false;
   let skipFuzzyEffect = false;
   let skipDoiEffect = false;
@@ -230,32 +231,42 @@ function App() {
     observerRebuildPending = true;
     queueMicrotask(() => {
       observerRebuildPending = false;
+      // The microtask can outlive the component; don't recreate the observer.
+      if (disposed) return;
       setupObserver();
     });
   };
 
-  // A long smooth scroll can outlast a fixed timer, so keep suppressing the
-  // observer until the panel actually stops scrolling. The timer is a fallback
-  // for Safari, which does not fire `scrollend`.
-  const handleScrollEnd = () => {
-    if (!isScrollingFromClick) return;
-    isScrollingFromClick = false;
+  // While a click-driven scroll is in flight, suppress the observer until the
+  // panel goes quiet. Each scroll event resets a short quiet timer; when no
+  // scroll fires for the quiet period the animation has settled. This spans the
+  // instant-jump/smooth-residual gap in smoothScrollIntoView (a stray
+  // `scrollend` mid-gap would otherwise release suppression too early), needs no
+  // `scrollend` support, and has no hard deadline. A no-op when not suppressing.
+  const SCROLL_QUIET_MS = 250;
+  const armScrollQuietTimer = () => {
     if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
+    scrollClickTimer = window.setTimeout(() => {
+      isScrollingFromClick = false;
+    }, SCROLL_QUIET_MS);
+  };
+  const handlePanelScroll = () => {
+    if (!isScrollingFromClick) return;
+    armScrollQuietTimer();
   };
 
   onCleanup(() => {
+    disposed = true;
     if (observer) observer.disconnect();
     if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
-    rightPanelRef?.removeEventListener("scrollend", handleScrollEnd);
+    rightPanelRef?.removeEventListener("scroll", handlePanelScroll);
   });
 
   const scrollToPaper = (doi: string) => {
     setSelectedDoi(doi);
     isScrollingFromClick = true;
-    if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
-    scrollClickTimer = window.setTimeout(() => {
-      isScrollingFromClick = false;
-    }, 1500);
+    // Arm immediately so suppression clears even when no scrolling is needed.
+    armScrollQuietTimer();
     const el = paperRefs[doi];
     if (el && rightPanelRef) {
       smoothScrollIntoView(rightPanelRef, el, { block: "start", residualViewports: 3.5 });
@@ -704,7 +715,7 @@ function App() {
           }}
           ref={(el) => {
             rightPanelRef = el;
-            el.addEventListener("scrollend", handleScrollEnd);
+            el.addEventListener("scroll", handlePanelScroll, { passive: true });
           }}
         >
           <Show
