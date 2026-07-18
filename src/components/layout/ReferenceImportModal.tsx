@@ -184,7 +184,9 @@ export const ReferenceImportModal = (props: Props) => {
     setProgress({ done: 0, total: refs.length });
     const found = await lookupAll(
       refs,
-      (done, total) => setProgress({ done, total }),
+      (done, total) => {
+        if (!signal.aborted) setProgress({ done, total });
+      },
       signal,
     );
     if (signal.aborted) return;
