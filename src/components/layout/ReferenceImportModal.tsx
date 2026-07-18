@@ -14,6 +14,7 @@ import {
 } from "../../utils/referenceParser";
 import { fetchOsfDois } from "../../utils/osfFetch";
 import { lookupAll, type LookupResult } from "../../utils/doiLookup";
+import { createFocusTrap } from "../../utils/modalA11y";
 
 type Tab = "paste" | "upload" | "osf";
 type Stage = "input" | "processing" | "results";
@@ -52,6 +53,7 @@ export const ReferenceImportModal = (props: Props) => {
 
   let abortController: AbortController | null = null;
   let fileInputRef: HTMLInputElement | undefined;
+  let modalRef: HTMLDivElement | undefined;
 
   const reset = () => {
     abortController?.abort();
@@ -86,6 +88,8 @@ export const ReferenceImportModal = (props: Props) => {
     window.removeEventListener("keydown", handleKey);
     abortController?.abort();
   });
+
+  createFocusTrap(() => modalRef, () => props.open);
 
   const loadFile = (file: File) => {
     const name = file.name.toLowerCase();
@@ -256,6 +260,7 @@ export const ReferenceImportModal = (props: Props) => {
     <Show when={props.open}>
       <div class="rim-backdrop" onClick={handleClose} role="presentation">
         <div
+          ref={modalRef}
           class="rim-modal"
           onClick={(e) => e.stopPropagation()}
           role="dialog"

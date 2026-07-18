@@ -1,5 +1,6 @@
 import { createSignal, For, Show, createMemo, onCleanup, onMount } from "solid-js";
 import type { JSX } from "solid-js";
+import { createFocusTrap } from "../../utils/modalA11y";
 
 // ── Bucket tag input ─────────────────────────────────────────────────────────
 
@@ -348,6 +349,7 @@ type Props = {
 };
 
 export const AdvancedSearchPanel = (props: Props) => {
+  let modalRef: HTMLDivElement | undefined;
   const [pendingAll, setPendingAll] = createSignal("");
   const [pendingAny, setPendingAny] = createSignal("");
   const [pendingNone, setPendingNone] = createSignal("");
@@ -365,6 +367,8 @@ export const AdvancedSearchPanel = (props: Props) => {
   onMount(() => document.addEventListener("keydown", handleKey));
   onCleanup(() => document.removeEventListener("keydown", handleKey));
 
+  createFocusTrap(() => modalRef, () => props.open);
+
   return (
     <Show when={props.open}>
       <div
@@ -373,6 +377,7 @@ export const AdvancedSearchPanel = (props: Props) => {
         role="presentation"
       >
         <div
+          ref={modalRef}
           class="adv-modal"
           role="dialog"
           aria-modal="true"
