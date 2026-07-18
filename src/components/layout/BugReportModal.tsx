@@ -14,11 +14,16 @@ export const BugReportModal = (props: Props) => {
   const [description, setDescription] = createSignal(props.errorMessage);
   const [steps, setSteps] = createSignal("");
 
+  // Capture phase so this topmost modal consumes Escape before the underlying
+  // modals' bubble-phase listeners (document/window) can also close on it.
   const handleKey = (e: KeyboardEvent) => {
-    if (e.key === "Escape") props.onClose();
+    if (e.key !== "Escape") return;
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    props.onClose();
   };
-  onMount(() => window.addEventListener("keydown", handleKey));
-  onCleanup(() => window.removeEventListener("keydown", handleKey));
+  onMount(() => document.addEventListener("keydown", handleKey, true));
+  onCleanup(() => document.removeEventListener("keydown", handleKey, true));
 
   // Mounted only while open, so the trap is always active for this instance.
   createFocusTrap(() => modalRef, () => true);

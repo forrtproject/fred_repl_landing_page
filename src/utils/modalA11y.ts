@@ -60,10 +60,13 @@ export function createFocusTrap(
       }
     };
 
-    container.addEventListener("keydown", handleKeyDown);
+    // Listen on document, not the container: dynamic content can unmount the
+    // focused element (dropping focus to <body>), after which a container-scoped
+    // listener would never see the Tab and could not recover focus.
+    document.addEventListener("keydown", handleKeyDown);
 
     onCleanup(() => {
-      container.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
       if (previouslyFocused && previouslyFocused.isConnected) {
         previouslyFocused.focus();
       }
