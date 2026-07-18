@@ -167,6 +167,7 @@ function App() {
   let rightPanelRef: HTMLDivElement | undefined;
   let topbarInputRef: HTMLInputElement | undefined;
   let isScrollingFromClick = false;
+  let clickScrollInterrupted = false;
   let scrollClickTimer: number | undefined;
   let observer: IntersectionObserver | undefined;
   let disposed = false;
@@ -248,11 +249,23 @@ function App() {
     if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
     scrollClickTimer = window.setTimeout(() => {
       isScrollingFromClick = false;
+      // If the user hijacked the click-scroll (wheel/touch), the observer's
+      // visibilityMap moved on while pickActive() was suppressed — reconcile
+      // the selection now. For an uninterrupted click-scroll we must NOT, or a
+      // target clamped near the list end (never reaching the panel top) would
+      // wrongly override the clicked selection.
+      if (clickScrollInterrupted) {
+        clickScrollInterrupted = false;
+        pickActive();
+      }
     }, SCROLL_QUIET_MS);
   };
   const handlePanelScroll = () => {
     if (!isScrollingFromClick) return;
     armScrollQuietTimer();
+  };
+  const handleClickScrollInterrupt = () => {
+    if (isScrollingFromClick) clickScrollInterrupted = true;
   };
 
   onCleanup(() => {
@@ -260,11 +273,14 @@ function App() {
     if (observer) observer.disconnect();
     if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
     rightPanelRef?.removeEventListener("scroll", handlePanelScroll);
+    rightPanelRef?.removeEventListener("wheel", handleClickScrollInterrupt);
+    rightPanelRef?.removeEventListener("touchmove", handleClickScrollInterrupt);
   });
 
   const scrollToPaper = (doi: string) => {
     setSelectedDoi(doi);
     isScrollingFromClick = true;
+    clickScrollInterrupted = false;
     // Arm immediately so suppression clears even when no scrolling is needed.
     armScrollQuietTimer();
     const el = paperRefs[doi];
@@ -716,6 +732,8 @@ function App() {
           ref={(el) => {
             rightPanelRef = el;
             el.addEventListener("scroll", handlePanelScroll, { passive: true });
+            el.addEventListener("wheel", handleClickScrollInterrupt, { passive: true });
+            el.addEventListener("touchmove", handleClickScrollInterrupt, { passive: true });
           }}
         >
           <Show
