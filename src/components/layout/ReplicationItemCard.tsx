@@ -1,6 +1,6 @@
 import { createSignal, For } from "solid-js";
 import type { ReplicationItem } from "../../@types";
-import { authorYearLine } from "../../utils/formatter";
+import { authorYearLine, normalizeOutcome } from "../../utils/formatter";
 
 type ReplicationItemCardProps = {
   item: ReplicationItem;
@@ -23,9 +23,9 @@ function parseOutcomeBadges(outcome: string): BadgeConfig[] {
     "robustness not checked": { label: "Not Checked", cls: "rob-unchecked" },
   };
 
-  // Normalize (trim, lowercase, collapse internal whitespace) so trailing spaces
-  // or irregular spacing don't cause a valid outcome to fall through to "N/A".
-  const normalized = (outcome ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+  // Shared normalization keeps badge matching in lockstep with formatter.ts
+  // bucketing, so a card's badge never contradicts the aggregate counts.
+  const normalized = normalizeOutcome(outcome);
   for (const [compKey, compBadge] of Object.entries(compMap)) {
     for (const [robKey, robBadge] of Object.entries(robMap)) {
       if (normalized === `${compKey}, ${robKey}`) return [compBadge, robBadge];

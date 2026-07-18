@@ -190,21 +190,21 @@ export const DetailView = (props: DetailViewProps) => {
     if (!o) return 0;
     return (o.success || 0) + (o.mixed || 0) + (o.partial || 0) + (o.failed || 0);
   };
+  // Unrounded so the three segment widths always sum to exactly 100%
+  // (independent rounding could yield 99% or 101%); CSS renders fractional %.
   const successPct = () =>
     categorizedTotal() > 0
-      ? Math.round(((outcomes()?.success || 0) / categorizedTotal()) * 100)
+      ? ((outcomes()?.success || 0) / categorizedTotal()) * 100
       : 0;
   const mixedPct = () =>
     categorizedTotal() > 0
-      ? Math.round(
-          (((outcomes()?.mixed || 0) + (outcomes()?.partial || 0)) /
-            categorizedTotal()) *
-            100,
-        )
+      ? (((outcomes()?.mixed || 0) + (outcomes()?.partial || 0)) /
+          categorizedTotal()) *
+        100
       : 0;
   const failedPct = () =>
     categorizedTotal() > 0
-      ? Math.round(((outcomes()?.failed || 0) / categorizedTotal()) * 100)
+      ? ((outcomes()?.failed || 0) / categorizedTotal()) * 100
       : 0;
   const outcomeVariations = () => {
     const o = outcomes();
