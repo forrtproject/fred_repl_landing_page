@@ -2,7 +2,7 @@
 // and any whitespace (spaces, tabs, newlines).
 const DOI_DELIMITER_RE = /[\s,;]+/;
 const DOI_PREFIX_RE = /10\./g;
-const DOI_URL_PREFIX_RE = /^(?:https?:\/\/(?:dx\.)?doi\.org\/|doi:\s*)/i;
+const DOI_URL_PREFIX_RE = /^(?:https?:\/\/(?:www\.|dx\.)?doi\.org\/|doi:\s*)/i;
 
 export function stripDoiUrl(s: string): string {
   return s.replace(DOI_URL_PREFIX_RE, "");
@@ -64,11 +64,13 @@ export function parseDoiPaste(raw: string): DoiPasteResult {
     };
   }
 
-  // No bad links but some tokens don't look like DOIs. Check if the whole
-  // input is actually one DOI whose whitespace got fragmented (e.g. a PDF
-  // copy with a line break mid-DOI): collapse and try again.
+  // No bad links but some tokens don't look like DOIs. The recovery this is
+  // built for is a single DOI split by a line break when copied out of a PDF.
+  // Restrict the collapse to inputs that actually contain a line break, so
+  // that prose like "10.1234/abc and some notes" (spaces, no newline) is not
+  // silently glued into a garbage DOI.
   const prefixCount = (raw.match(DOI_PREFIX_RE) || []).length;
-  if (prefixCount <= 1) {
+  if (prefixCount <= 1 && /[\r\n]/.test(raw)) {
     const collapsed = stripDoiUrl(raw.replace(/[\s,;]+/g, "").trim());
     if (collapsed.startsWith("10.")) return { kind: "single", doi: collapsed };
   }

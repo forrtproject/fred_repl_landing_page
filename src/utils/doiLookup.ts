@@ -1,5 +1,7 @@
 import type { ParsedReference } from "./referenceParser";
 
+const CROSSREF_EMAIL = import.meta.env.VITE_CROSSREF_EMAIL || "fred@forrt.org";
+
 export type LookupStatus = "found" | "resolved" | "not_found";
 
 export type LookupResult = {
@@ -16,7 +18,7 @@ async function crossRefLookup(
   query: string,
 ): Promise<{ doi: string; title: string; score: number } | null> {
   try {
-    const url = `https://api.crossref.org/works?query.bibliographic=${encodeURIComponent(query)}&rows=1&select=DOI,title,score&mailto=keegangeorgevaz@gmail.com`;
+    const url = `https://api.crossref.org/works?query.bibliographic=${encodeURIComponent(query)}&rows=1&select=DOI,title,score&mailto=${encodeURIComponent(CROSSREF_EMAIL)}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
     const data = await res.json();

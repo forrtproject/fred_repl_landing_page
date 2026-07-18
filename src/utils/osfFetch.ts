@@ -1,9 +1,26 @@
 import type { ParsedReference } from "./referenceParser";
 import { extractDoisDirect } from "./referenceParser";
 
+// OSF GUIDs are 5-character alphanumeric. URLs may namespace the GUID behind
+// path segments (e.g. /preprints/psyarxiv/abcde) or suffix it with /download,
+// so take the last path segment that looks like a GUID rather than the first.
+const OSF_GUID_RE = /^[a-z0-9]{5}$/i;
+const OSF_NON_GUID_SEGMENTS = new Set(["preprints", "download"]);
+
 function extractOsfGuid(url: string): string | null {
-  const m = url.match(/osf\.io\/([a-z0-9]+)/i);
-  return m ? m[1] : null;
+  const afterHost = url.split(/osf\.io\//i)[1];
+  if (afterHost === undefined) return null;
+
+  // Drop query string and fragment, then split into path segments.
+  const path = afterHost.split(/[?#]/)[0]!;
+  const segments = path.split("/").filter(seg => seg !== "");
+
+  for (let i = segments.length - 1; i >= 0; i -= 1) {
+    const seg = segments[i]!;
+    if (OSF_NON_GUID_SEGMENTS.has(seg.toLowerCase())) continue;
+    if (OSF_GUID_RE.test(seg)) return seg;
+  }
+  return null;
 }
 
 export async function fetchOsfDois(

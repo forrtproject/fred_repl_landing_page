@@ -12,9 +12,26 @@ const escapeHtml = (value: string): string =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
+// True only if the leading `{` is closed by the trailing `}` (i.e. the two are
+// a matching pair), so that a value like `{A} and {B}` — where the brace depth
+// returns to 0 before the end — is left intact instead of being corrupted.
+const bracesArePair = (value: string): boolean => {
+  let depth = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    const char = value[i];
+    if (char === "{") depth += 1;
+    else if (char === "}") depth -= 1;
+    if (depth === 0 && i < value.length - 1) return false;
+  }
+  return depth === 0;
+};
+
 const stripWrapping = (value: string): string => {
   let trimmed = value.trim();
-  if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
+  if (
+    (trimmed.startsWith("{") && trimmed.endsWith("}") && bracesArePair(trimmed)) ||
+    (trimmed.startsWith('"') && trimmed.endsWith('"') && trimmed.length >= 2)
+  ) {
     trimmed = trimmed.slice(1, -1).trim();
   }
   return trimmed;

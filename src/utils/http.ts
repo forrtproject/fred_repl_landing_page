@@ -40,9 +40,7 @@ export class Http {
     this.config = {
       baseURL: '',
       timeout: 10000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {},
       ...config,
     };
   }
@@ -69,10 +67,18 @@ export class Http {
     data?: any,
     config?: RequestConfig
   ): Promise<HttpResponse<T>> {
-    const mergedHeaders = {
+    const mergedHeaders: Record<string, string> = {
       ...this.config.headers,
       ...config?.headers,
     };
+
+    // Only advertise a JSON body Content-Type when there actually is a body;
+    // sending it on GETs triggers unnecessary CORS preflights. An explicit
+    // caller-provided Content-Type is preserved.
+    const hasBody = data !== undefined && data !== null;
+    if (hasBody && mergedHeaders['Content-Type'] === undefined) {
+      mergedHeaders['Content-Type'] = 'application/json';
+    }
 
     const timeout = config?.timeout ?? this.config.timeout;
     const fullURL = this.buildURL(url, config?.params);
