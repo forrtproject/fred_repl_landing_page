@@ -1,6 +1,6 @@
 import { createSignal, For } from "solid-js";
 import type { ReplicationItem } from "../../@types";
-import { authorYearLine } from "../../utils/formatter";
+import { authorYearLine, normalizeOutcome } from "../../utils/formatter";
 
 type ReplicationItemCardProps = {
   item: ReplicationItem;
@@ -23,10 +23,12 @@ function parseOutcomeBadges(outcome: string): BadgeConfig[] {
     "robustness not checked": { label: "Not Checked", cls: "rob-unchecked" },
   };
 
-  const lower = outcome?.toLowerCase() ?? "";
+  // Shared normalization keeps badge matching in lockstep with formatter.ts
+  // bucketing, so a card's badge never contradicts the aggregate counts.
+  const normalized = normalizeOutcome(outcome);
   for (const [compKey, compBadge] of Object.entries(compMap)) {
     for (const [robKey, robBadge] of Object.entries(robMap)) {
-      if (lower === `${compKey}, ${robKey}`) return [compBadge, robBadge];
+      if (normalized === `${compKey}, ${robKey}`) return [compBadge, robBadge];
     }
   }
 
@@ -37,7 +39,11 @@ function parseOutcomeBadges(outcome: string): BadgeConfig[] {
     mixed: { label: "Mixed", cls: "mixed" },
     partial: { label: "Partial", cls: "partial" },
   };
-  return [simple[lower] ?? { label: outcome || "N/A", cls: "" }];
+  if (simple[normalized]) return [simple[normalized]];
+  // A non-empty but unrecognized outcome gets the "other" class so it survives the
+  // hideNa filter; only a truly-empty outcome stays as the class-less "N/A" badge.
+  const trimmed = (outcome ?? "").trim();
+  return [trimmed ? { label: trimmed, cls: "other" } : { label: "N/A", cls: "" }];
 }
 
 const CopyIcon = () => (

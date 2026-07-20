@@ -29,7 +29,7 @@ export const NoDataState = (props: NoDataStateProps) => {
           <div class="no-data-actions">
             <a
               class="cb-btn primary"
-              href={`https://docs.google.com/forms/d/e/1FAIpQLSeMCwdtP0TPgL55stniuyyTxnNwyC34mO4VUuLcQwYrLI89sQ/viewform?usp=pp_url&entry.1234567890=${encodeURIComponent(props.doi)}`}
+              href={`https://docs.google.com/forms/d/e/1FAIpQLSeMCwdtP0TPgL55stniuyyTxnNwyC34mO4VUuLcQwYrLI89sQ/viewform?usp=pp_url&entry.355822122=${encodeURIComponent(props.doi)}`}
               target="_blank"
               rel="noreferrer"
             >

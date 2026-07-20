@@ -183,17 +183,29 @@ export const DetailView = (props: DetailViewProps) => {
   };
 
   const outcomes = () => rep().outcomes;
-  const total = () => outcomes()?.total || 0;
+  // Denominator is the categorized total; `outcomes.total` includes replications
+  // with a null/other outcome that belong to no segment and must not be shown.
+  const categorizedTotal = () => {
+    const o = outcomes();
+    if (!o) return 0;
+    return (o.success || 0) + (o.mixed || 0) + (o.partial || 0) + (o.failed || 0);
+  };
+  // Unrounded so the three segment widths always sum to exactly 100%
+  // (independent rounding could yield 99% or 101%); CSS renders fractional %.
   const successPct = () =>
-    total() > 0 ? Math.round(((outcomes()?.success || 0) / total()) * 100) : 0;
-  const mixedPct = () =>
-    total() > 0
-      ? Math.round(
-          (((outcomes()?.mixed || 0) + (outcomes()?.partial || 0)) / total()) *
-            100,
-        )
+    categorizedTotal() > 0
+      ? ((outcomes()?.success || 0) / categorizedTotal()) * 100
       : 0;
-  const failedPct = () => (total() > 0 ? 100 - successPct() - mixedPct() : 0);
+  const mixedPct = () =>
+    categorizedTotal() > 0
+      ? (((outcomes()?.mixed || 0) + (outcomes()?.partial || 0)) /
+          categorizedTotal()) *
+        100
+      : 0;
+  const failedPct = () =>
+    categorizedTotal() > 0
+      ? ((outcomes()?.failed || 0) / categorizedTotal()) * 100
+      : 0;
   const outcomeVariations = () => {
     const o = outcomes();
     if (!o) return 0;

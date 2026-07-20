@@ -1,4 +1,5 @@
 import type { OriginalPaper, FormattedDOIResult, DOIResults } from "../@types";
+import { normalizeOutcome } from "../utils/formatter";
 
 export const formatReplicationResponse = (data?: OriginalPaper): FormattedDOIResult => {
     if (!data) {
@@ -8,13 +9,14 @@ export const formatReplicationResponse = (data?: OriginalPaper): FormattedDOIRes
     const replications = data.record?.replications || [];
     const outcomes = replications.reduce(
         (acc, curr) => {
-            if (curr.outcome === "successful") {
+            const outcome = normalizeOutcome(curr.outcome);
+            if (outcome === "successful") {
                 acc.success = (acc.success || 0) + 1;
-            } else if (curr.outcome === "failed") {
+            } else if (outcome === "failed") {
                 acc.failed = (acc.failed || 0) + 1;
-            } else if (curr.outcome === "partial") {
+            } else if (outcome === "partial") {
                 acc.partial = (acc.partial || 0) + 1;
-            } else if (curr.outcome === "mixed") {
+            } else if (outcome === "mixed") {
                 acc.mixed = (acc.mixed || 0) + 1;
             }
             return acc;
