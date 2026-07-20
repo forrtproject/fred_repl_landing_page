@@ -66,7 +66,11 @@ export const downloadElementAsPdf = (element: HTMLElement, options: PdfOptions =
   container.appendChild(clonedElement);
   body.appendChild(container);
 
+  // Both the load event and the timeout can fire; guard so print runs once.
+  let printed = false;
   const triggerPrint = () => {
+    if (printed) return;
+    printed = true;
     printWindow.focus();
     printWindow.print();
     printWindow.onafterprint = () => printWindow.close();
