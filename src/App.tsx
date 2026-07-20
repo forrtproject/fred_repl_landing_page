@@ -162,8 +162,10 @@ function App() {
   let rightPanelRef: HTMLDivElement | undefined;
   let topbarInputRef: HTMLInputElement | undefined;
   let isScrollingFromClick = false;
+  let clickScrollInterrupted = false;
   let scrollClickTimer: number | undefined;
   let observer: IntersectionObserver | undefined;
+  let disposed = false;
   let ignoreNextReset = false;
   let skipFuzzyEffect = false;
   let skipDoiEffect = false;
@@ -218,23 +220,76 @@ function App() {
       { root: rightPanelRef, threshold: [0, 0.1, 0.25, 0.5, 0.75, 1] },
     );
 
-    for (const [, el] of Object.entries(paperRefs)) {
-      if (el) observer.observe(el);
+    for (const [doi, el] of Object.entries(paperRefs)) {
+      // Ref callbacks fire before <For> removes old nodes, so paperRefs can
+      // still hold detached elements — prune them and only observe live ones.
+      if (!el || !el.isConnected) {
+        delete paperRefs[doi];
+        continue;
+      }
+      observer.observe(el);
     }
   };
 
+  // Every row's ref callback requests a rebuild; coalesce them into one rebuild
+  // per render batch instead of tearing down/reconnecting the observer per row.
+  let observerRebuildPending = false;
+  const scheduleObserverSetup = () => {
+    if (observerRebuildPending) return;
+    observerRebuildPending = true;
+    queueMicrotask(() => {
+      observerRebuildPending = false;
+      // The microtask can outlive the component; don't recreate the observer.
+      if (disposed) return;
+      setupObserver();
+    });
+  };
+
+  // While a click-driven scroll is in flight, suppress the observer until the
+  // panel goes quiet. Each scroll event resets a short quiet timer; when no
+  // scroll fires for the quiet period the animation has settled. This spans the
+  // instant-jump/smooth-residual gap in smoothScrollIntoView (a stray
+  // `scrollend` mid-gap would otherwise release suppression too early), needs no
+  // `scrollend` support, and has no hard deadline. A no-op when not suppressing.
+  const SCROLL_QUIET_MS = 250;
+  const armScrollQuietTimer = () => {
+    if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
+    scrollClickTimer = window.setTimeout(() => {
+      isScrollingFromClick = false;
+      // If the user hijacked the click-scroll (wheel/touch), the observer's
+      // visibilityMap moved on while pickActive() was suppressed — reconcile
+      // the selection now. For an uninterrupted click-scroll we must NOT, or a
+      // target clamped near the list end (never reaching the panel top) would
+      // wrongly override the clicked selection.
+      if (clickScrollInterrupted) {
+        clickScrollInterrupted = false;
+        pickActive();
+      }
+    }, SCROLL_QUIET_MS);
+  };
+  const handlePanelScroll = () => {
+    if (!isScrollingFromClick) return;
+    armScrollQuietTimer();
+  };
+  const handleClickScrollInterrupt = () => {
+    if (isScrollingFromClick) clickScrollInterrupted = true;
+  };
+
   onCleanup(() => {
+    disposed = true;
     if (observer) observer.disconnect();
     if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
+    rightPanelRef?.removeEventListener("scroll", handlePanelScroll);
+    rightPanelRef?.removeEventListener("wheel", handleClickScrollInterrupt);
+    rightPanelRef?.removeEventListener("touchmove", handleClickScrollInterrupt);
   });
 
   const scrollToPaper = (doi: string) => {
     setSelectedDoi(doi);
     isScrollingFromClick = true;
-    if (scrollClickTimer) window.clearTimeout(scrollClickTimer);
-    scrollClickTimer = window.setTimeout(() => {
-      isScrollingFromClick = false;
-    }, 800);
+    clickScrollInterrupted = false;
+    // Arm immediately so suppression clears even when no scrolling is needed.
+    armScrollQuietTimer();
     const el = paperRefs[doi];
     if (el && rightPanelRef) {
       smoothScrollIntoView(rightPanelRef, el, { block: "start", residualViewports: 3.5 });
@@ -717,7 +772,12 @@ function App() {
           classList={{
             "right-panel--scrollable": Object.keys(results()).length > 0,
           }}
-          ref={rightPanelRef}
+          ref={(el) => {
+            rightPanelRef = el;
+            el.addEventListener("scroll", handlePanelScroll, { passive: true });
+            el.addEventListener("wheel", handleClickScrollInterrupt, { passive: true });
+            el.addEventListener("touchmove", handleClickScrollInterrupt, { passive: true });
+          }}
         >
           <Show
             when={Object.keys(results()).length > 0}
@@ -846,7 +906,7 @@ function App() {
                     data-doi={doi}
                     ref={(el) => {
                       paperRefs[doi] = el;
-                      setupObserver();
+                      scheduleObserverSetup();
                     }}
                     class={`scroll-paper-section ${selectedDoi() === doi ? "highlighted" : ""}`}
                   >
