@@ -1,4 +1,5 @@
 import { Show, onCleanup, onMount, type JSX } from "solid-js";
+import { createFocusTrap } from "../../utils/modalA11y";
 
 type AlertDialogProps = {
   open: boolean;
@@ -11,12 +12,16 @@ type AlertDialogProps = {
 };
 
 export const AlertDialog = (props: AlertDialogProps) => {
+  let dialogRef: HTMLDivElement | undefined;
+
   const handleKey = (e: KeyboardEvent) => {
     if (e.key === "Escape" && props.open) props.onClose();
   };
 
   onMount(() => window.addEventListener("keydown", handleKey));
   onCleanup(() => window.removeEventListener("keydown", handleKey));
+
+  createFocusTrap(() => dialogRef, () => props.open);
 
   return (
     <Show when={props.open}>
@@ -26,6 +31,7 @@ export const AlertDialog = (props: AlertDialogProps) => {
         role="presentation"
       >
         <div
+          ref={dialogRef}
           class="alert-dialog"
           classList={{
             "alert-dialog-warning": (props.variant ?? "warning") === "warning",

@@ -1,4 +1,5 @@
-import { createSignal } from "solid-js";
+import { createSignal, onCleanup, onMount } from "solid-js";
+import { createFocusTrap } from "../../utils/modalA11y";
 
 type Props = {
   errorTitle: string;
@@ -9,8 +10,23 @@ type Props = {
 const GITHUB_REPO = "forrtproject/flora-replication-atlas";
 
 export const BugReportModal = (props: Props) => {
+  let modalRef: HTMLDivElement | undefined;
   const [description, setDescription] = createSignal(props.errorMessage);
   const [steps, setSteps] = createSignal("");
+
+  // Capture phase so this topmost modal consumes Escape before the underlying
+  // modals' bubble-phase listeners (document/window) can also close on it.
+  const handleKey = (e: KeyboardEvent) => {
+    if (e.key !== "Escape") return;
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    props.onClose();
+  };
+  onMount(() => document.addEventListener("keydown", handleKey, true));
+  onCleanup(() => document.removeEventListener("keydown", handleKey, true));
+
+  // Mounted only while open, so the trap is always active for this instance.
+  createFocusTrap(() => modalRef, () => true);
 
   const handleSubmit = () => {
     const title = `Bug: ${props.errorTitle}`;
@@ -39,7 +55,7 @@ export const BugReportModal = (props: Props) => {
 
   return (
     <div class="brm-overlay" onClick={props.onClose}>
-      <div class="brm-box" onClick={(e) => e.stopPropagation()}>
+      <div ref={modalRef} class="brm-box" onClick={(e) => e.stopPropagation()}>
         <div class="brm-header">
           <h2 class="brm-title">Report an Error</h2>
           <button class="brm-close" onClick={props.onClose} aria-label="Close">

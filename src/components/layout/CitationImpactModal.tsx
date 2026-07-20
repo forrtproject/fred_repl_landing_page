@@ -1,5 +1,6 @@
 import { createEffect, createMemo, Show, For, onCleanup } from "solid-js";
 import type { OriginalPaper, CitationTimelineEntry } from "../../@types";
+import { createFocusTrap } from "../../utils/modalA11y";
 
 type Props = {
   paper: OriginalPaper;
@@ -351,6 +352,7 @@ const LEGEND = [
 ] as const;
 
 export const CitationImpactModal = (props: Props) => {
+  let modalRef: HTMLDivElement | undefined;
   const handleBackdrop = (e: MouseEvent) => {
     if ((e.target as HTMLElement).classList.contains("cim-backdrop"))
       props.onClose();
@@ -362,6 +364,9 @@ export const CitationImpactModal = (props: Props) => {
     document.addEventListener("keydown", handleKey);
     onCleanup(() => document.removeEventListener("keydown", handleKey));
   });
+
+  // Mounted only while open, so the trap is always active for this instance.
+  createFocusTrap(() => modalRef, () => true);
 
   const tl = () => props.paper.citation_timeline?.entries ?? [];
   const reps = () => props.paper.record?.replications ?? [];
@@ -389,6 +394,7 @@ export const CitationImpactModal = (props: Props) => {
   return (
     <div class="cim-backdrop" onClick={handleBackdrop}>
       <div
+        ref={modalRef}
         class="cim-modal"
         role="dialog"
         aria-modal="true"
