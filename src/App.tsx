@@ -33,6 +33,17 @@ import { smoothScrollIntoView } from "./utils/smoothScroll";
 
 const isDoi = (s: string) => /^10\.\d{4,}\//.test(s.trim());
 
+// Shared original/replication classification, kept in sync with StudyListPanel.
+const classifyPaper = (paper: OriginalPaper) => {
+  const rep = formatReplicationResponse(paper);
+  const isOriginal =
+    (rep.replications?.length || 0) > 0 || (rep.reproductions?.length || 0) > 0;
+  const isReplication =
+    (rep.originals?.length || 0) > 0 ||
+    (paper.types?.includes("reproduction") ?? false);
+  return { isOriginal, isReplication };
+};
+
 const debounce = <T extends unknown[]>(
   fn: (...args: T) => void,
   delay: number,
@@ -108,13 +119,7 @@ function App() {
   const filteredResults = createMemo(() => {
     const filter = typeFilter();
     return Object.entries(results()).filter(([, paper]) => {
-      const rep = formatReplicationResponse(paper);
-      const isOriginal =
-        (rep.replications?.length || 0) > 0 ||
-        (rep.reproductions?.length || 0) > 0;
-      const isReplication =
-        (rep.originals?.length || 0) > 0 ||
-        (paper.types?.includes("reproduction") ?? false);
+      const { isOriginal, isReplication } = classifyPaper(paper);
       if (filter === "original") return isOriginal;
       return isReplication;
     });
@@ -126,12 +131,7 @@ function App() {
     const counts = Object.values(res).reduce(
       (acc, paper) => {
         const rep = formatReplicationResponse(paper);
-        const isOriginal =
-          (rep.replications?.length || 0) > 0 ||
-          (rep.reproductions?.length || 0) > 0;
-        const isReplication =
-          (rep.originals?.length || 0) > 0 ||
-          (paper.types?.includes("reproduction") ?? false);
+        const { isOriginal, isReplication } = classifyPaper(paper);
         if (filter === "original" && !isOriginal) return acc;
         if (filter === "replication" && !isReplication) return acc;
         acc.success += rep.outcomes?.success ?? 0;
@@ -153,13 +153,8 @@ function App() {
   const paperCount = createMemo(() => {
     const filter = typeFilter();
     return Object.values(results()).filter((p) => {
-      if (!p.record) return false;
-      const rep = formatReplicationResponse(p);
-      const isOriginal = (rep.replications?.length || 0) > 0;
-      const isReplication = (rep.originals?.length || 0) > 0;
-      if (filter === "original") return isOriginal;
-      if (filter === "replication") return isReplication;
-      return true;
+      const { isOriginal, isReplication } = classifyPaper(p);
+      return filter === "original" ? isOriginal : isReplication;
     }).length;
   });
 
@@ -173,6 +168,18 @@ function App() {
   let skipFuzzyEffect = false;
   let skipDoiEffect = false;
   let skipAdvancedEffect = false;
+  // Monotonic search id; a resolving response is ignored if a newer search started.
+  let searchGeneration = 0;
+
+  // Abandon any in-flight search so its (possibly slow) response can't repopulate
+  // state the user has since cleared. Bumping the generation makes both the
+  // success and error handlers of the outstanding request bail.
+  const invalidateSearches = () => {
+    ++searchGeneration;
+    debouncedFuzzySearch.cancel();
+    debouncedDoiSearch.cancel();
+    setIsLoading(false);
+  };
 
   const visibilityMap = new Map<string, number>();
 
@@ -270,7 +277,7 @@ function App() {
     setTags(newTags);
     syncUrl(newTags);
     if (newTags.length === 0) {
-      debouncedDoiSearch.cancel();
+      invalidateSearches();
       setResults({});
       setSelectedDoi(null);
       setHasSearched(false);
@@ -287,20 +294,8 @@ function App() {
 
     // Auto-switch filter if the current one has no matches
     const papers = Object.values(data);
-    const hasOriginals = papers.some((p) => {
-      const rep = formatReplicationResponse(p);
-      return (
-        (rep.replications?.length || 0) > 0 ||
-        (rep.reproductions?.length || 0) > 0
-      );
-    });
-    const hasReplications = papers.some((p) => {
-      const rep = formatReplicationResponse(p);
-      return (
-        (rep.originals?.length || 0) > 0 ||
-        (p.types?.includes("reproduction") ?? false)
-      );
-    });
+    const hasOriginals = papers.some((p) => classifyPaper(p).isOriginal);
+    const hasReplications = papers.some((p) => classifyPaper(p).isReplication);
     if (typeFilter() === "original" && !hasOriginals && hasReplications) {
       setTypeFilter("replication");
     } else if (
@@ -330,6 +325,7 @@ function App() {
     if (currentMode === "advanced") {
       clearAdvancedSearch();
     }
+    invalidateSearches();
     setTags([]);
     setResults({});
     setSelectedDoi(null);
@@ -344,19 +340,25 @@ function App() {
       yearFrom: undefined,
       yearTo: undefined,
       outcomes: undefined,
+      paperTypes: undefined,
     });
   };
 
   const doDoiSearch = (dois: string[]) => {
     if (dois.length === 0) return;
+    const gen = ++searchGeneration;
     setIsLoading(true);
     setHasSearched(true);
     setHasEverSearched(true);
     setResults({});
     setSelectedDoi(null);
     fetchMultipleDOIInfo(dois)
-      .then(handleResults)
+      .then((res) => {
+        if (gen !== searchGeneration) return;
+        handleResults(res);
+      })
       .catch((error) => {
+        if (gen !== searchGeneration) return;
         setIsLoading(false);
         setResults({});
         const [t, m, r] = toastDetails(error);
@@ -366,6 +368,7 @@ function App() {
 
   const doFuzzySearch = (query: string) => {
     if (!query) return;
+    const gen = ++searchGeneration;
     skipFuzzyEffect = true;
     setIsLoading(true);
     setHasSearched(true);
@@ -374,8 +377,12 @@ function App() {
     setSelectedDoi(null);
     setSearchParams({ q: query, dois: undefined });
     fetchFuzzySearch(query)
-      .then(handleResults)
+      .then((res) => {
+        if (gen !== searchGeneration) return;
+        handleResults(res);
+      })
       .catch((error) => {
+        if (gen !== searchGeneration) return;
         setIsLoading(false);
         setResults({});
         const [t, m, r] = toastDetails(error);
@@ -388,12 +395,22 @@ function App() {
     const mustAny = advMustAny();
     const mustNone = advMustNone();
     const paperTypes = advPaperTypes();
-    if (!mustAll.length && !mustAny.length && !mustNone.length && !paperTypes.length) return;
-
     const yearFrom = advYearFrom();
     const yearTo = advYearTo();
     const outcomes = advOutcomes();
+    const yearNarrowed =
+      yearFrom !== 1950 || yearTo !== new Date().getFullYear();
+    if (
+      !mustAll.length &&
+      !mustAny.length &&
+      !mustNone.length &&
+      !paperTypes.length &&
+      !outcomes.length &&
+      !yearNarrowed
+    )
+      return;
 
+    const gen = ++searchGeneration;
     setShowAdvancedModal(false);
     setSearchMode("advanced");
     skipAdvancedEffect = true;
@@ -428,8 +445,12 @@ function App() {
       outcomes: outcomes.length ? outcomes : undefined,
       paperTypes: paperTypes.length ? paperTypes : undefined,
     })
-      .then(handleResults)
+      .then((res) => {
+        if (gen !== searchGeneration) return;
+        handleResults(res);
+      })
       .catch((error) => {
+        if (gen !== searchGeneration) return;
         setIsLoading(false);
         setResults({});
         const [t, m, r] = toastDetails(error);
@@ -487,6 +508,10 @@ function App() {
     const advMustAllParam = String(searchParams.mustAll || "");
     const advMustAnyParam = String(searchParams.mustAny || "");
     const advMustNoneParam = String(searchParams.mustNone || "");
+    const advOutcomesParam = String(searchParams.outcomes || "");
+    const advPaperTypesParam = String(searchParams.paperTypes || "");
+    const advYearFromParam = String(searchParams.yearFrom || "");
+    const advYearToParam = String(searchParams.yearTo || "");
     const currentTags = doi
       ? doi
           .split(",")
@@ -512,24 +537,28 @@ function App() {
         setSearchMode("fuzzy");
         doFuzzySearch(q);
       }
-    } else if (advMustAllParam || advMustAnyParam || advMustNoneParam) {
+    } else if (
+      advMustAllParam ||
+      advMustAnyParam ||
+      advMustNoneParam ||
+      advOutcomesParam ||
+      advPaperTypesParam ||
+      advYearFromParam ||
+      advYearToParam
+    ) {
       if (skipAdvancedEffect) {
         skipAdvancedEffect = false;
       } else {
         const mustAll = advMustAllParam ? advMustAllParam.split("|") : [];
         const mustAny = advMustAnyParam ? advMustAnyParam.split("|") : [];
         const mustNone = advMustNoneParam ? advMustNoneParam.split("|") : [];
-        const yearFrom = searchParams.yearFrom
-          ? parseInt(String(searchParams.yearFrom))
-          : 1950;
-        const yearTo = searchParams.yearTo
-          ? parseInt(String(searchParams.yearTo))
+        const yearFrom = advYearFromParam ? parseInt(advYearFromParam) : 1950;
+        const yearTo = advYearToParam
+          ? parseInt(advYearToParam)
           : new Date().getFullYear();
-        const outcomes = searchParams.outcomes
-          ? String(searchParams.outcomes).split("|")
-          : [];
-        const paperTypes = searchParams.paperTypes
-          ? String(searchParams.paperTypes).split("|")
+        const outcomes = advOutcomesParam ? advOutcomesParam.split("|") : [];
+        const paperTypes = advPaperTypesParam
+          ? advPaperTypesParam.split("|")
           : [];
         setAdvMustAll(mustAll);
         setAdvMustAny(mustAny);
@@ -546,6 +575,7 @@ function App() {
         setHasEverSearched(true);
         setResults({});
         setSelectedDoi(null);
+        const gen = ++searchGeneration;
         fetchAdvancedSearch({
           mustHave: mustAll.length ? mustAll : undefined,
           anyOf: mustAny.length ? mustAny : undefined,
@@ -555,8 +585,12 @@ function App() {
           outcomes: outcomes.length ? outcomes : undefined,
           paperTypes: paperTypes.length ? paperTypes : undefined,
         })
-          .then(handleResults)
+          .then((res) => {
+            if (gen !== searchGeneration) return;
+            handleResults(res);
+          })
           .catch((error) => {
+            if (gen !== searchGeneration) return;
             setIsLoading(false);
             setResults({});
             const [t, m] = toastDetails(error);
@@ -568,6 +602,7 @@ function App() {
       if (ignoreNextReset) {
         ignoreNextReset = false;
       } else {
+        invalidateSearches();
         setTags([]);
         setInputValue("");
         setResults({});
@@ -579,7 +614,14 @@ function App() {
 
   createEffect(() => {
     hasSearched();
-    setTimeout(() => topbarInputRef?.focus(), 0);
+    const t = setTimeout(() => {
+      // Don't steal focus from another interactive element the user is using.
+      const active = document.activeElement;
+      if (active && active !== document.body && active !== topbarInputRef)
+        return;
+      topbarInputRef?.focus();
+    }, 0);
+    onCleanup(() => clearTimeout(t));
   });
 
   return (
@@ -611,6 +653,7 @@ function App() {
             if (q === "") {
               debouncedFuzzySearch.cancel();
               if (tags().length === 0) {
+                invalidateSearches();
                 setResults({});
                 setSelectedDoi(null);
                 setHasSearched(false);

@@ -47,15 +47,18 @@ export const fetchMultipleDOIInfo = async (dois: string[]): Promise<DOIResults> 
   return merged;
 };
 
+const MAX_PAGES = 50;
+
 export const fetchFuzzySearch = async (query: string): Promise<DOIResults> => {
   const allResults: Record<string, OriginalPaper> = {};
   let offset = 0;
 
-  while (true) {
+  for (let page = 0; page < MAX_PAGES; page++) {
     const response = await backend.get<SearchResponse>(
       `/search?q=${encodeURIComponent(query)}&limit=1000&offset=${offset}`
     );
     const data = response.data;
+    if (Object.keys(data.results ?? {}).length === 0) break;
     Object.assign(allResults, data.results ?? {});
     if (!data.hasMore) break;
     offset += 1000;
@@ -87,9 +90,10 @@ export const fetchAdvancedSearch = async (params: AdvancedSearchParams): Promise
   const allResults: Record<string, OriginalPaper> = {};
   let offset = 0;
 
-  while (true) {
+  for (let page = 0; page < MAX_PAGES; page++) {
     const response = await backend.post<SearchResponse>('/search', { ...baseBody, limit: 1000, offset });
     const data = response.data;
+    if (Object.keys(data.results ?? {}).length === 0) break;
     Object.assign(allResults, data.results ?? {});
     if (!data.hasMore) break;
     offset += 1000;
