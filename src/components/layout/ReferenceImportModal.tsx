@@ -110,8 +110,11 @@ export const ReferenceImportModal = (props: Props) => {
   };
 
   const handleFileInput = (e: Event) => {
-    const file = (e.currentTarget as HTMLInputElement).files?.[0];
+    const input = e.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
     if (file) loadFile(file);
+    // Reset so re-selecting the same file still fires a change event
+    input.value = "";
   };
 
   const handleDrop = (e: DragEvent) => {
@@ -149,6 +152,7 @@ export const ReferenceImportModal = (props: Props) => {
         }
         return;
       }
+      if (signal.aborted) return;
       if (refs.length === 0) {
         setStage("input");
         setError("No DOIs found in the OSF content.");
@@ -180,22 +184,37 @@ export const ReferenceImportModal = (props: Props) => {
     setProgress({ done: 0, total: refs.length });
     const found = await lookupAll(
       refs,
-      (done, total) => setProgress({ done, total }),
+      (done, total) => {
+        if (!signal.aborted) setProgress({ done, total });
+      },
       signal,
     );
+    if (signal.aborted) return;
     setResults(found);
     setStage("results");
   };
 
   const [editingIndex, setEditingIndex] = createSignal<number | null>(null);
   const [editingValue, setEditingValue] = createSignal("");
+  // Set when Escape aborts an edit, so the ensuing blur skips committing
+  let editCancelled = false;
 
   const startEdit = (index: number, currentDoi: string) => {
+    editCancelled = false;
     setEditingIndex(index);
     setEditingValue(currentDoi);
   };
 
+  const cancelEdit = () => {
+    editCancelled = true;
+    setEditingIndex(null);
+  };
+
   const commitEdit = (index: number) => {
+    if (editCancelled) {
+      editCancelled = false;
+      return;
+    }
     const doi = editingValue().trim();
     setResults((prev) =>
       prev.map((r, i) => {
@@ -680,7 +699,7 @@ export const ReferenceImportModal = (props: Props) => {
                                 e.preventDefault();
                                 commitEdit(i());
                               }
-                              if (e.key === "Escape") setEditingIndex(null);
+                              if (e.key === "Escape") cancelEdit();
                             }}
                             onBlur={() => commitEdit(i())}
                             onClick={(e) => e.stopPropagation()}
