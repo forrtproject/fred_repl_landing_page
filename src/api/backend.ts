@@ -11,7 +11,7 @@ type SearchResponse = {
 };
 
 const backend = createHttp({
-  baseURL: import.meta.env.VITE_BACKEND_URL || "https://5waa6mryb6.execute-api.eu-central-1.amazonaws.com/v1",
+  baseURL: import.meta.env.VITE_BACKEND_URL || "https://rep-api.forrt.org/v1/",
 });
 
 export const fetchDOIInfo = async (doi: string) => {
