@@ -164,7 +164,8 @@ export const DetailView = (props: DetailViewProps) => {
 
   const handleShareLink = () => {
     const base = import.meta.env.BASE_URL || "/";
-    const url = `${window.location.origin}${base}doi/${props.paper.doi}`;
+    // Trailing slash matches the canonical (prerendered) URL and avoids a 301
+    const url = `${window.location.origin}${base}doi/${props.paper.doi}/`;
     copyToClipboard(url, "Share link");
   };
 

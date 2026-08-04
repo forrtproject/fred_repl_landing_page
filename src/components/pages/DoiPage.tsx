@@ -113,7 +113,22 @@ export const DoiPage = () => {
       setMetaTag("og:title", paper.title, "property");
       setMetaTag("og:description", description, "property");
       setMetaTag("og:type", "article", "property");
-      setMetaTag("og:url", window.location.href, "property");
+
+      // Always point at the trailing-slash URL: that is what GitHub Pages serves
+      // (the slash-less form 301s to it), so it must be the declared canonical.
+      const base = import.meta.env.BASE_URL || "/";
+      const canonicalUrl = `${window.location.origin}${base}doi/${doi()}/`;
+      setMetaTag("og:url", canonicalUrl, "property");
+
+      let canonicalLink = document.querySelector(
+        'link[rel="canonical"]',
+      ) as HTMLLinkElement | null;
+      if (!canonicalLink) {
+        canonicalLink = document.createElement("link");
+        canonicalLink.rel = "canonical";
+        document.head.appendChild(canonicalLink);
+      }
+      canonicalLink.href = canonicalUrl;
 
       // Per-author OG tags for LLM and social parsers
       const existingAuthorMetas = document.querySelectorAll(
@@ -233,7 +248,7 @@ export const DoiPage = () => {
         navigate(`/?q=${encodeURIComponent(query)}`);
       }
     } else if (allTags.length === 1) {
-      navigate(`/doi/${allTags[0]}`);
+      navigate(`/doi/${allTags[0]}/`);
     } else if (allTags.length > 1) {
       navigate(`/?dois=${allTags.join(",")}`);
     }

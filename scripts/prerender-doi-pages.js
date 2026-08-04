@@ -135,7 +135,10 @@ function buildPageMeta(paper) {
     .filter(Boolean)
     .join(", ");
 
-  const pageUrl = `${SITE_URL}/doi/${doi}`;
+  // Trailing slash is required: pages are written as doi/<doi>/index.html, and
+  // GitHub Pages 301-redirects the slash-less URL to this one. Declaring the
+  // slash-less form as canonical makes Google override it with the redirect target.
+  const pageUrl = `${SITE_URL}/doi/${doi}/`;
 
   const jsonLd = JSON.stringify({
     "@context": "https://schema.org",
