@@ -326,11 +326,11 @@ export const TopBar = (props: TopBarProps) => {
           </a>
           <a
             class="topbar-link"
-            href="https://forrt.org/apps/fred_explorer.html"
+            href="https://forrt.org/flora-explorer/"
             target="_blank"
             rel="noopener"
           >
-            FReD Explorer
+            FLoRA Explorer
           </a>
           <a
             class="topbar-cta"
@@ -527,11 +527,11 @@ export const TopBar = (props: TopBarProps) => {
           </a>
           <a
             class="topbar-mobile-link"
-            href="https://forrt.org/apps/fred_explorer.html"
+            href="https://forrt.org/flora-explorer/"
             target="_blank"
             rel="noopener"
           >
-            FReD Explorer
+            FLoRA Explorer
           </a>
           <a
             class="topbar-mobile-cta"
