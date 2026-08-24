@@ -1,3 +1,4 @@
+import { AlertCircleIcon, CheckIcon, ChevronRightIcon, ClipboardIcon, CloseIcon, EditIcon, FileIcon, GlobeIcon, SearchIcon, UploadIcon, WarningIcon } from "../icons";
 import {
   createSignal,
   createEffect,
@@ -295,17 +296,7 @@ export const ReferenceImportModal = (props: Props) => {
               </p>
             </div>
             <button class="rim-close" onClick={handleClose} aria-label="Close">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <CloseIcon size={16} />
             </button>
           </div>
 
@@ -317,36 +308,14 @@ export const ReferenceImportModal = (props: Props) => {
                 class={`rim-tab ${tab() === "paste" ? "active" : ""}`}
                 onClick={() => switchTab("paste")}
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M9 2h6l2 2v2H7V4z" />
-                  <rect x="5" y="6" width="14" height="16" rx="1" />
-                  <path d="M9 12h6M9 16h4" />
-                </svg>
+                <ClipboardIcon size={14} />
                 Paste text
               </button>
               <button
                 class={`rim-tab ${tab() === "upload" ? "active" : ""}`}
                 onClick={() => switchTab("upload")}
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
+                <UploadIcon size={14} />
                 Upload file
               </button>
               {false && (
@@ -354,17 +323,7 @@ export const ReferenceImportModal = (props: Props) => {
                   class={`rim-tab ${tab() === "osf" ? "active" : ""}`}
                   onClick={() => switchTab("osf")}
                 >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" />
-                  </svg>
+                  <GlobeIcon size={14} />
                   OSF link
                 </button>
               )}
@@ -375,7 +334,7 @@ export const ReferenceImportModal = (props: Props) => {
                 <textarea
                   class="rim-textarea"
                   placeholder={
-                    "Paste your reference list here…\n\nExamples:\n  10.1037/a0012345\n  Smith, J. (2020). Title. Journal, 10(2). https://doi.org/10.1037/a0012345\n  [1] Jones A. Title here. J. 2019;5:1–10."
+                    "Paste your reference list here…\n\nExamples:\n  10.1037/a0012345\n  Smith, J. (2020). Title. Journal, 10(2). https://doi.org/10.1037/a0012345\n  [1] Jones A. Title here. J. 2019;5:1-10."
                   }
                   value={text()}
                   onInput={(e) => {
@@ -408,19 +367,7 @@ export const ReferenceImportModal = (props: Props) => {
                     when={fileName()}
                     fallback={
                       <>
-                        <svg
-                          width="32"
-                          height="32"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          class="rim-drop-icon"
-                        >
-                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                          <polyline points="17 8 12 3 7 8" />
-                          <line x1="12" y1="3" x2="12" y2="15" />
-                        </svg>
+                        <UploadIcon size={32} class="rim-drop-icon" />
                         <p class="rim-drop-label">
                           Drop a file here or{" "}
                           <span class="rim-drop-link">click to browse</span>
@@ -431,24 +378,13 @@ export const ReferenceImportModal = (props: Props) => {
                       </>
                     }
                   >
-                    <svg
-                      width="28"
-                      height="28"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      class="rim-drop-icon-ok"
-                    >
-                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
+                    <FileIcon size={28} class="rim-drop-icon-ok" />
                     <p class="rim-drop-filename">{fileName()}</p>
                     <p class="rim-drop-change">Click to change file</p>
                   </Show>
                 </div>
 
-                {/* Preview — skip for PDF (binary content) */}
+                {/* Preview: skipped for PDF (binary content) */}
                 <Show
                   when={fileContent() && fileName() && fileType() !== "pdf"}
                 >
@@ -461,33 +397,13 @@ export const ReferenceImportModal = (props: Props) => {
                 <Show when={fileType() === "pdf" && fileName()}>
                   <p class="rim-file-preview-label">Ready</p>
                   <div class="rim-pdf-ready">
-                    <svg
-                      width="13"
-                      height="13"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    PDF loaded — DOIs will be extracted on submit.
+                    <CheckIcon size={13} />
+                    PDF loaded. DOIs will be extracted on submit.
                   </div>
                 </Show>
                 <Show when={fileType() === "pdf" && fileName()}>
                 <div class="rim-upload-tip rim-upload-tip-warning">
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                    <line x1="12" y1="9" x2="12" y2="13" />
-                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                  </svg>
+                  <WarningIcon size={13} />
                   <span>
                     Note: Only DOIs are extracted from uploaded files. If the
                     references do not contain DOIs, copy-paste them directly
@@ -545,16 +461,7 @@ export const ReferenceImportModal = (props: Props) => {
                 disabled={submitDisabled()}
               >
                 Extract &amp; look up DOIs
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
+                <ChevronRightIcon size={14} />
               </button>
             </div>
           </Show>
@@ -625,33 +532,14 @@ export const ReferenceImportModal = (props: Props) => {
                       <Show
                         when={result.status !== "not_found"}
                         fallback={
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                          >
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                          </svg>
+                          <CloseIcon size={14} />
                         }
                       >
                         <div
                           class={`rim-checkbox ${result.selected ? "checked" : ""}`}
                         >
                           <Show when={result.selected}>
-                            <svg
-                              width="10"
-                              height="10"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="3"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
+                            <CheckIcon size={10} />
                           </Show>
                         </div>
                       </Show>
@@ -677,17 +565,7 @@ export const ReferenceImportModal = (props: Props) => {
                                   startEdit(i(), result.doi ?? "");
                                 }}
                               >
-                                <svg
-                                  width="11"
-                                  height="11"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  stroke-width="2.5"
-                                >
-                                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                </svg>
+                                <EditIcon size={11} />
                               </button>
                             </div>
                           }
@@ -722,18 +600,7 @@ export const ReferenceImportModal = (props: Props) => {
                       </p>
                       <Show when={result.status === "not_found"}>
                         <p class="rim-row-unresolved">
-                          <svg
-                            width="11"
-                            height="11"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                          >
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
-                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                          </svg>
+                          <AlertCircleIcon size={11} />
                           Couldn't find a DOI for this reference. Please look it
                           up manually (e.g. on{" "}
                           <a
@@ -771,17 +638,7 @@ export const ReferenceImportModal = (props: Props) => {
               >
                 Search {selectedDois().length} paper
                 {selectedDois().length !== 1 ? "s" : ""}
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="M21 21l-4.3-4.3" />
-                </svg>
+                <SearchIcon size={14} />
               </button>
             </div>
           </Show>

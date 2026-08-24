@@ -1,19 +1,20 @@
-@import url("https://fonts.googleapis.com/css2?family=Domine:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap");
+@import "./fonts.css";
 @import "tailwindcss";
-@custom-variant dark (&:where(.dark, .dark *));
-@plugin "daisyui" {
-  themes: light --default;
-}
 
 :root {
+  /* ── Brand (unchanged from the pre-redesign palette) ── */
   --primary: #853953;
   --primary-dark: #612d53;
   --primary-light: #a04d6b;
   --primary-faint: #f9f0f4;
+  --primary-soft: #ecd9e0;
+
   --neutral: #2c2c2c;
   --surface: #f3f4f4;
   --surface-alt: #e8e9e9;
   --white: #fff;
+
+  /* ── Outcome semantics: these encode data, not decoration. Do not unify. ── */
   --success: #16a34a;
   --success-light: #15803d;
   --success-bg: #f0fdf4;
@@ -27,21 +28,56 @@
   --info: #853953;
   --info-bg: #f9f0f4;
   --info-border: #d4a5b8;
+
   --text: #2c2c2c;
   --text-secondary: #4a4a4a;
-  --text-muted: #888;
-  --text-faint: #aaa;
+  --text-muted: #5c5c5c;
+  /* Floor is AA on --surface-alt, the darkest ground this sits on (4.51:1). */
+  --text-faint: #696969;
   --border: #d0d1d1;
   --border-light: #e0e1e1;
-  --font-display: "Domine", Georgia, serif;
-  --font-body: "Source Sans 3", "Segoe UI", sans-serif;
-  --radius: 6px;
-  --radius-lg: 10px;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.1);
-  --transition-fast: 0.12s ease;
-  --transition: 0.2s ease;
+
+  /* ── Type ── */
+  --font-display: "Domine", Georgia, "Times New Roman", serif;
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Menlo", "Consolas", ui-monospace, monospace;
+
+  --fs-1: 10px;
+  --fs-2: 11px;
+  --fs-3: 12px;
+  --fs-4: 13px;
+  --fs-5: 14px;
+  --fs-6: 16px;
+  --fs-7: clamp(19px, 1.9vw, 21px);
+  --fs-8: clamp(24px, 3.2vw, 32px);
+  --fs-9: clamp(30px, 5vw, 46px);
+
+  /* ── Space ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  /* ── Shape ──
+     One scale, applied by role: inputs and tags take -sm, buttons and controls
+     take the base, cards and panels take -lg, chips take -full. Bare `50%` is
+     reserved for genuine circles (spinners, status dots). Nothing else. */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 14px;
+  --radius-full: 999px;
+
+  /* ── Elevation: tinted to the plum neutral, never pure black ── */
+  --shadow-sm: 0 1px 2px rgba(60, 30, 42, 0.06);
+  --shadow-md: 0 4px 16px rgba(60, 30, 42, 0.08);
+  --shadow-lg: 0 12px 36px rgba(60, 30, 42, 0.12);
+
+  --transition-fast: 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition: 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 
   --color-primary: var(--primary);
   --color-secondary: #6c757d;
@@ -61,6 +97,7 @@ body {
   background: var(--surface);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   height: 100vh;
   height: 100dvh;
   display: flex;
@@ -74,6 +111,32 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+/* Keyboard users get a ring; pointer users do not. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Tactile press feedback on anything clickable. */
+:where(button, a.lb-cell, .welcome-doi):active {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  :where(button, a.lb-cell, .welcome-doi):active {
+    transform: none;
+  }
 }
 
 /* ═══════════════════════════════
@@ -107,12 +170,12 @@ body {
   height: 30px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--fs-5);
   font-family: var(--font-display);
   letter-spacing: -0.5px;
 }
@@ -123,12 +186,12 @@ body {
 }
 .topbar-name strong {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: var(--fs-5);
   font-weight: 700;
   letter-spacing: 0.2px;
 }
 .topbar-name span {
-  font-size: 10px;
+  font-size: var(--fs-1);
   opacity: 0.5;
   letter-spacing: 0.6px;
   text-transform: uppercase;
@@ -141,7 +204,7 @@ body {
   gap: 0.5rem;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 0.25rem 0.3rem 0.25rem 0.85rem;
   width: 480px;
   max-width: 45vw;
@@ -178,7 +241,7 @@ body {
   border: none;
   background: transparent;
   color: var(--white);
-  font-size: 13px;
+  font-size: var(--fs-4);
   font-family: var(--font-body);
   outline: none;
   padding: 0.3rem 0;
@@ -192,9 +255,9 @@ body {
   gap: 0.25rem;
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0.15rem 0.25rem 0.15rem 0.45rem;
-  font-size: 12px;
+  font-size: var(--fs-3);
   color: var(--white);
   white-space: nowrap;
   flex-shrink: 0;
@@ -205,7 +268,7 @@ body {
   border: none;
   color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--fs-5);
   line-height: 1;
   padding: 0 0.15rem;
   display: flex;
@@ -220,8 +283,8 @@ body {
   color: var(--white);
   border: none;
   padding: 0.35rem 1rem;
-  border-radius: 6px;
-  font-size: 12px;
+  border-radius: var(--radius);
+  font-size: var(--fs-3);
   font-weight: 600;
   cursor: pointer;
   font-family: var(--font-body);
@@ -238,7 +301,7 @@ body {
   align-items: center;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -246,7 +309,7 @@ body {
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 11px;
+  font-size: var(--fs-2);
   font-weight: 600;
   font-family: var(--font-body);
   padding: 0.25rem 0.5rem;
@@ -272,7 +335,7 @@ body {
 .topbar-link {
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  font-size: 13px;
+  font-size: var(--fs-4);
   padding: 0.35rem 0.7rem;
   border-radius: var(--radius);
   transition: all var(--transition-fast);
@@ -287,7 +350,7 @@ body {
   padding: 0.35rem 0.75rem;
   border-radius: var(--radius);
   font-weight: 600;
-  font-size: 12px;
+  font-size: var(--fs-3);
   text-decoration: none;
   margin-left: 0.25rem;
   transition: background var(--transition-fast);
@@ -308,6 +371,10 @@ body {
 }
 .main-layout.no-sidebar {
   grid-template-columns: 1fr;
+}
+/* The entry state is a scrolling page; the results shell stays a fixed two-pane app. */
+.main-layout.no-sidebar .right-panel {
+  overflow-y: auto;
 }
 
 /* ─── Full-page DOI layout ─── */
@@ -341,7 +408,7 @@ body {
 }
 .lp-header h3 {
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: var(--fs-4);
   color: var(--primary);
   font-weight: 600;
 }
@@ -351,10 +418,10 @@ body {
   gap: 0.4rem;
 }
 .lp-count {
-  font-size: 10.5px;
+  font-size: var(--fs-2);
   background: var(--surface);
   padding: 0.15rem 0.5rem;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -362,9 +429,9 @@ body {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 10.5px;
+  font-size: var(--fs-2);
   padding: 0.2rem 0.5rem;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-light);
   background: var(--white);
   color: var(--text-muted);
@@ -388,16 +455,16 @@ body {
   color: var(--primary);
 }
 .lp-select-count {
-  font-size: 10.5px;
+  font-size: var(--fs-2);
   color: var(--primary);
   font-weight: 600;
   white-space: nowrap;
 }
 .lp-clear-select-btn {
-  font-size: 13px;
+  font-size: var(--fs-4);
   line-height: 1;
   padding: 0.1rem 0.35rem;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-light);
   background: transparent;
   color: var(--text-muted);
@@ -421,9 +488,9 @@ body {
   flex-wrap: wrap;
 }
 .filter-chip {
-  font-size: 11px;
+  font-size: var(--fs-2);
   padding: 0.2rem 0.55rem;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-light);
   background: var(--white);
   color: var(--text-muted);
@@ -471,9 +538,9 @@ body {
   flex-shrink: 0;
 }
 .sli-filter-btn {
-  font-size: 11px;
+  font-size: var(--fs-2);
   padding: 0.2rem 0.55rem;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-light);
   background: var(--white);
   color: var(--text-muted);
@@ -492,26 +559,26 @@ body {
   color: var(--text);
 }
 .sli-filter-btn.original.active {
-  background: #eff6ff;
-  border-color: #93c5fd;
-  color: #2563eb;
+  background: var(--primary-faint);
+  border-color: var(--primary-soft);
+  color: var(--primary-dark);
 }
 .sli-filter-btn.replication.active {
-  background: #f5f3ff;
-  border-color: #c4b5fd;
-  color: #7c3aed;
+  background: var(--surface-alt);
+  border-color: var(--border);
+  color: var(--text);
 }
 .sli-filter-count {
-  font-size: 10px;
+  font-size: var(--fs-1);
   font-weight: 400;
   opacity: 0.7;
   margin-left: 0.15rem;
 }
 .sli-select-all-btn {
   margin-left: auto;
-  font-size: 10.5px;
+  font-size: var(--fs-2);
   padding: 0.15rem 0.45rem;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border-light);
   background: transparent;
   color: var(--text-muted);
@@ -548,7 +615,7 @@ body {
 }
 .study-list::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 100px;
+  border-radius: var(--radius-full);
 }
 
 .sli {
@@ -578,7 +645,7 @@ body {
   top: 8px;
   bottom: 8px;
   width: 3px;
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   background: var(--primary);
 }
 /* ─── Dot / checkbox (same element, morphs on hover) ─── */
@@ -587,7 +654,7 @@ body {
   height: 14px;
   flex-shrink: 0;
   margin-top: 0.3rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   border: 1.5px solid transparent;
   background: transparent;
   position: relative;
@@ -656,7 +723,7 @@ body {
 }
 .sli-title {
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--fs-4);
   line-height: 1.35;
   color: var(--text);
   margin-bottom: 0.15rem;
@@ -666,7 +733,7 @@ body {
   overflow: hidden;
 }
 .sli-meta {
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--text-muted);
 }
 .sli-pills {
@@ -676,9 +743,9 @@ body {
   flex-wrap: wrap;
 }
 .sli-pill {
-  font-size: 10px;
+  font-size: var(--fs-1);
   padding: 0.1rem 0.4rem;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   font-weight: 600;
   line-height: 1.4;
 }
@@ -695,12 +762,12 @@ body {
   color: var(--error);
 }
 .sli-type-tag.original {
-  background: #eff6ff;
-  color: #2563eb;
+  background: var(--primary-faint);
+  color: var(--primary-dark);
 }
 .sli-type-tag.replication {
-  background: #f5f3ff;
-  color: #7c3aed;
+  background: var(--surface-alt);
+  color: var(--text);
 }
 .sli-pills-sep {
   width: 1px;
@@ -729,7 +796,7 @@ body {
 }
 .right-panel::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 100px;
+  border-radius: var(--radius-full);
 }
 
 /* ─── Scroll layout paper sections ─── */
@@ -763,13 +830,13 @@ body {
 }
 .no-data-state h2 {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: var(--fs-7);
   color: var(--text);
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
 .no-data-state p {
-  font-size: 14px;
+  font-size: var(--fs-5);
   color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 1.5rem;
@@ -795,205 +862,662 @@ body {
   flex: 1;
 }
 
-/* ─── Welcome state ─── */
+/* ─── Generic centred pane (DOI page loading state) ─── */
 .welcome-state {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem 3rem;
+  padding: var(--space-5) var(--space-7);
   text-align: center;
   width: 100%;
   margin: 0 auto;
-  overflow: hidden;
 }
 .welcome-icon {
   width: 52px;
   height: 52px;
   background: var(--white);
   border: 1px solid var(--border-light);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 0.85rem;
+  margin-bottom: var(--space-3);
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
 }
-.welcome-state h1 {
+
+/* ═══════════════════════════════
+   STATIC CRAWLABLE COPY
+   Shipped inside #root in index.html and in every prerendered DOI page.
+   Visible only until the app boots, so it is styled to match the live page
+   rather than left as raw HTML.
+═══════════════════════════════ */
+.ssg {
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding: var(--space-7) var(--space-5) var(--space-8);
+  overflow-y: auto;
+}
+.ssg h1 {
   font-family: var(--font-display);
-  font-size: 1.2rem;
-  color: var(--primary);
-  margin-bottom: 0.35rem;
+  font-size: var(--fs-9);
+  line-height: 1.08;
   font-weight: 700;
-}
-.welcome-state p {
-  font-size: 13.5px;
-  color: var(--text-secondary);
-  line-height: 1.55;
-  margin-bottom: 0.85rem;
-  max-width: 380px;
-}
-.welcome-import-or-divider {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 480px;
-  gap: 10px;
-  color: var(--text-faint);
-  font-size: 12px;
-  margin: 0;
-}
-.welcome-import-or-divider::before,
-.welcome-import-or-divider::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--border-light);
-}
-
-.welcome-action-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  width: 100%;
-  max-width: 480px;
-}
-
-.welcome-cards-or {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-faint);
-  font-size: 11px;
-  padding: 0.3rem 0;
-}
-
-.welcome-cards-or::before,
-.welcome-cards-or::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--border-light);
-}
-
-.welcome-import-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  max-width: 480px;
-  background: var(--white);
-  border: 1.5px dashed var(--info-border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  cursor: pointer;
-  text-align: left;
-  font-family: var(--font-body);
-  margin-bottom: 0;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-a.welcome-import-card {
-  text-decoration: none;
-  color: inherit;
-}
-.welcome-import-card:hover {
-  border-style: solid;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-faint);
-}
-.welcome-import-card-icon {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  background: var(--primary-faint);
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   color: var(--primary);
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--space-3);
+  max-width: 20ch;
 }
-.welcome-import-card-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.welcome-import-card-title {
-  font-size: 13.5px;
+.ssg h2 {
+  font-family: var(--font-display);
+  font-size: var(--fs-8);
+  line-height: 1.2;
   font-weight: 700;
   color: var(--text);
+  margin: var(--space-6) 0 var(--space-4);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-light);
 }
-.welcome-import-card-sub {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.4;
+.ssg h3 {
+  font-family: var(--font-display);
+  font-size: var(--fs-7);
+  font-weight: 700;
+  color: var(--text);
+  margin: var(--space-5) 0 var(--space-3);
 }
-.welcome-import-card-arrow {
-  flex-shrink: 0;
-  color: var(--text-faint);
-  transition:
-    color var(--transition-fast),
-    transform var(--transition-fast);
+.ssg p,
+.ssg li,
+.ssg dd {
+  font-size: var(--fs-5);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 68ch;
 }
-.welcome-import-card:hover .welcome-import-card-arrow {
+.ssg p {
+  margin: 0 0 var(--space-4);
+}
+.ssg ul {
+  margin: 0 0 var(--space-4);
+  padding-left: var(--space-5);
+}
+.ssg li {
+  margin-bottom: var(--space-2);
+}
+.ssg dl {
+  margin: 0 0 var(--space-4);
+}
+.ssg dt {
+  font-size: var(--fs-5);
+  font-weight: 700;
+  color: var(--text);
+  margin-top: var(--space-4);
+}
+.ssg dd {
+  margin: var(--space-1) 0 0;
+}
+.ssg a {
   color: var(--primary);
-  transform: translateX(2px);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.ssg a:hover {
+  color: var(--primary-dark);
+}
+.ssg-meta {
+  font-size: var(--fs-4);
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+.ssg-related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-left: 0;
+  list-style: none;
+}
+.ssg-related li {
+  margin: 0;
+}
+.ssg-related a {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  background: var(--white);
+  font-size: var(--fs-4);
+  text-decoration: none;
+  color: var(--text-secondary);
+}
+.ssg-related a:hover {
+  border-color: var(--primary-soft);
+  background: var(--primary-faint);
+  color: var(--primary-dark);
+}
+@media (max-width: 768px) {
+  .ssg {
+    padding: var(--space-5) var(--space-4) var(--space-7);
+  }
 }
 
-.welcome-examples {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
+/* Inline links produced by the markdown renderer. */
+.md-link {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.md-link:hover {
+  color: var(--primary-dark);
+}
+
+/* ═══════════════════════════════
+   LANDING (entry state)
+═══════════════════════════════ */
+.landing {
   width: 100%;
-  max-width: 480px;
-  margin-top: 1.25rem;
+  padding: 0 var(--space-5) var(--space-8);
+}
+.landing > * {
+  max-width: 1120px;
+  margin-inline: auto;
+}
+
+/* ─── Hero: left-aligned, asymmetric whitespace at desktop ─── */
+.landing-hero {
+  padding-block: var(--space-6) var(--space-7);
+}
+.landing-hero-inner {
+  max-width: 44rem;
+}
+/* The search box is the hero's asset, so it is scaled to the headline. */
+.landing-hero-inner .welcome-search {
+  max-width: 100%;
+  padding: 0.45rem 0.5rem 0.45rem 0.95rem;
+  margin-bottom: var(--space-4);
+}
+.landing-hero-inner .welcome-search .tag-input-wrap input {
+  font-size: var(--fs-6);
+}
+.landing-hero-inner .welcome-search-btn {
+  padding: 0.5rem 1.4rem;
+  font-size: var(--fs-5);
+}
+.landing-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-9);
+  line-height: 1.08;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--space-3);
+  text-wrap: balance;
+}
+.landing-lede {
+  font-size: var(--fs-6);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 56ch;
+  margin: 0 0 var(--space-5);
+}
+
+/* ─── Example chips (hero, suggestions pane, no-results pane) ─── */
+.welcome-examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
 }
 .welcome-examples-label {
-  grid-column: 1 / -1;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: var(--fs-4);
   color: var(--text-muted);
   font-weight: 600;
+  margin-right: var(--space-1);
 }
 .welcome-doi {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.55rem 0.85rem;
+  gap: var(--space-1);
+  padding: 0.3rem 0.7rem;
   background: var(--white);
   border: 1px solid var(--border-light);
-  border-radius: var(--radius);
-  font-size: 13px;
+  border-radius: var(--radius-full);
+  font-size: var(--fs-4);
+  font-family: var(--font-body);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  font-family: var(--font-body);
+  white-space: nowrap;
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    background var(--transition-fast);
 }
 .welcome-doi:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--primary-soft);
+  color: var(--primary-dark);
   background: var(--primary-faint);
 }
 .welcome-doi svg {
-  opacity: 0.4;
+  opacity: 0.5;
   flex-shrink: 0;
 }
 .welcome-doi:hover svg {
-  opacity: 0.8;
+  opacity: 1;
 }
-.welcome-footnote {
-  margin-top: 0.75rem;
-  font-size: 12px;
-  color: var(--text-muted, #999);
+
+@media (max-width: 768px) {
+  .landing-hero-inner .welcome-search {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+    padding: var(--space-2);
+  }
+  .landing-hero-inner .welcome-search > svg {
+    display: none;
+  }
+  .landing-hero-inner .welcome-search .search-mode-toggle {
+    order: 1;
+  }
+  .landing-hero-inner .welcome-search .tag-input-wrap {
+    order: 2;
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  .landing-hero-inner .welcome-search .tag-input-wrap input {
+    min-width: 0;
+    width: 100%;
+  }
+  .landing-hero-inner .welcome-search-btn {
+    order: 3;
+    flex: 1 1 100%;
+  }
+}
+
+/* ─── Hero entrance ───
+   Justification: the entry state presents headline, lede, search box and chips
+   with no other hierarchy cue, so a short staggered rise establishes reading
+   order on first paint. Load-in only; nothing loops, nothing follows scroll. */
+@media (prefers-reduced-motion: no-preference) {
+  /* The headline is excluded: it is the LCP element, and starting it at
+     opacity 0 would push Largest Contentful Paint out by the whole sequence. */
+  .landing-hero-inner > *:not(.landing-title) {
+    animation: landing-rise 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  }
+  .landing-hero-inner > *:nth-child(2) {
+    animation-delay: 0.05s;
+  }
+  .landing-hero-inner > *:nth-child(3) {
+    animation-delay: 0.11s;
+  }
+  .landing-hero-inner > *:nth-child(4) {
+    animation-delay: 0.17s;
+  }
+}
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Section rhythm ─── */
+.landing-section {
+  padding-block: var(--space-6);
+  border-top: 1px solid var(--border-light);
+}
+
+/* ─── Section reveal ───
+   Justification: the landing reads top-to-bottom as one argument, so each
+   section resolves as it arrives rather than all four sitting flat on load.
+   Scroll-driven CSS, so no scroll listener and no main-thread work. Sections
+   already in view on load render at their end state. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .landing-section {
+      animation: landing-rise 1s linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 60%;
+    }
+  }
+}
+.landing-h2 {
+  font-family: var(--font-display);
+  font-size: var(--fs-8);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 var(--space-5);
+  letter-spacing: -0.01em;
+}
+
+/* ─── Bento trio: one feature cell plus two standard cells ─── */
+.landing-bento {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  grid-template-rows: auto auto;
+  gap: var(--space-3);
+}
+.lb-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+.lb-cell:hover {
+  border-color: var(--primary-soft);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.lb-cell:active {
+  transform: translateY(0);
+}
+.lb-cell--feature {
+  grid-row: span 2;
+  justify-content: center;
+  background:
+    radial-gradient(
+      120% 90% at 8% 4%,
+      rgba(133, 57, 83, 0.11),
+      transparent 62%
+    ),
+    var(--primary-faint);
+  border-color: var(--primary-soft);
+}
+.lb-cell--alt {
+  background: var(--surface-alt);
+}
+.lb-figure {
+  font-family: var(--font-display);
+  font-size: var(--fs-9);
+  line-height: 1;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-3);
+}
+.lb-title {
+  font-size: var(--fs-6);
+  font-weight: 700;
+  color: var(--text);
+}
+.lb-sub {
+  font-size: var(--fs-5);
+  line-height: 1.55;
+  color: var(--text-secondary);
+  max-width: 40ch;
+}
+.lb-cell--feature .lb-go {
+  margin-top: var(--space-4);
+}
+.lb-go {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-3);
+  font-size: var(--fs-4);
+  font-weight: 600;
+  color: var(--primary);
+}
+.lb-go svg {
+  transition: transform var(--transition-fast);
+}
+.lb-cell:hover .lb-go svg {
+  transform: translateX(3px);
+}
+
+/* ─── Record preview: a real atlas entry beside the list of its parts ─── */
+.landing-record {
+  display: grid;
+  grid-template-columns: minmax(0, 27rem) minmax(0, 1fr);
+  gap: var(--space-7);
+  align-items: start;
+}
+.lr-figure {
+  margin: 0;
+  position: sticky;
+  top: var(--space-5);
+}
+.lr-card {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+.lr-orig {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.lr-tag {
+  align-self: flex-start;
+  font-size: var(--fs-1);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: var(--primary-faint);
+  border-radius: var(--radius-full);
+  padding: 0.1rem 0.5rem;
+  margin-bottom: var(--space-2);
+}
+.lr-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-5);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text);
+  margin: 0;
+}
+.lr-meta {
+  font-size: var(--fs-3);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.45;
+}
+.lr-journal {
+  font-size: var(--fs-3);
+  font-style: italic;
+  color: var(--text-muted);
+  margin: 0;
+}
+.lr-doi {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2);
+  color: var(--primary);
+  margin-top: var(--space-1);
+}
+.lr-rep {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-light);
+  background: var(--surface);
+}
+.lr-outcome {
+  flex-shrink: 0;
+  align-self: flex-start;
+  font-size: var(--fs-1);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--success-light);
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.45rem;
+}
+.lr-rep-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.lr-quote {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--success-border);
+  font-size: var(--fs-3);
   line-height: 1.5;
-  max-width: 380px;
-  text-align: center;
+  color: var(--text-secondary);
 }
+.lr-caption {
+  margin-top: var(--space-3);
+  font-size: var(--fs-4);
+}
+.lr-caption a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.lr-caption a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* ─── Definition rows ─── */
+.landing-defs {
+  margin: 0;
+  display: grid;
+  gap: 0;
+}
+.ld-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-1);
+  padding-block: var(--space-4);
+}
+.ld-row + .ld-row {
+  border-top: 1px solid var(--border-light);
+}
+.ld-row dt {
+  font-size: var(--fs-5);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+}
+.ld-row dd {
+  margin: 0;
+  font-size: var(--fs-5);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 62ch;
+}
+
+/* ─── About: prose with a link rail ─── */
+.landing-about {
+  display: grid;
+  grid-template-columns: minmax(0, 62ch) minmax(0, 15rem);
+  justify-content: start;
+  gap: var(--space-7);
+  align-items: start;
+}
+.landing-about-main p {
+  font-size: var(--fs-5);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-4);
+}
+.landing-about-main p:last-child {
+  margin-bottom: 0;
+}
+.landing-about-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-left: 2px solid var(--primary-soft);
+  padding-left: var(--space-4);
+}
+.landing-about-aside a {
+  font-size: var(--fs-5);
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  padding-block: var(--space-2);
+  transition: color var(--transition-fast);
+}
+.landing-about-aside a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* ─── Landing responsive collapse ─── */
+@media (max-width: 1024px) {
+  .landing-bento {
+    grid-template-columns: 1fr 1fr;
+  }
+  .lb-cell--feature {
+    grid-row: auto;
+    grid-column: span 2;
+  }
+  .landing-record {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+  .lr-figure {
+    position: static;
+  }
+  .landing-about {
+    grid-template-columns: 1fr;
+  }
+  .landing-about-aside {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    border-left: 0;
+    border-top: 2px solid var(--primary-soft);
+    padding-left: 0;
+    padding-top: var(--space-3);
+  }
+}
+@media (max-width: 768px) {
+  .landing {
+    padding: 0 var(--space-4) var(--space-7);
+  }
+  .landing-hero {
+    padding-block: var(--space-5) var(--space-6);
+  }
+  .landing-section {
+    padding-block: var(--space-5);
+  }
+  .landing-bento {
+    grid-template-columns: 1fr;
+  }
+  .lb-cell--feature {
+    grid-column: auto;
+  }
+  .lb-cell {
+    padding: var(--space-4);
+  }
+  .lr-rep {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}
+
 
 /* ─── Welcome search bar ─── */
 .welcome-search {
@@ -1002,7 +1526,7 @@ a.welcome-import-card {
   gap: 0.5rem;
   background: var(--white);
   border: 1px solid var(--border-light);
-  border-radius: 10px;
+  border-radius: var(--radius);
   padding: 0.35rem 0.4rem 0.35rem 0.85rem;
   width: 100%;
   max-width: 480px;
@@ -1024,19 +1548,19 @@ a.welcome-import-card {
 }
 .welcome-search .search-mode-toggle button {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: var(--fs-2);
 }
 .welcome-search .search-mode-toggle button.active {
   background: var(--primary);
   color: var(--white);
 }
 .welcome-search .search-mode-toggle button:hover:not(.active) {
-  color: var(--text-primary);
+  color: var(--text);
   background: rgba(0, 0, 0, 0.06);
 }
 .welcome-search .tag-input-wrap input {
-  color: var(--text-primary);
-  font-size: 14px;
+  color: var(--text);
+  font-size: var(--fs-5);
 }
 .welcome-search .tag-input-wrap input::placeholder {
   color: var(--text-muted);
@@ -1054,8 +1578,8 @@ a.welcome-import-card {
   color: var(--white);
   border: none;
   padding: 0.4rem 1.2rem;
-  border-radius: 7px;
-  font-size: 13px;
+  border-radius: var(--radius);
+  font-size: var(--fs-4);
   font-weight: 600;
   cursor: pointer;
   font-family: var(--font-body);
@@ -1096,7 +1620,7 @@ a.welcome-import-card {
   border-bottom: 1px solid var(--border-light);
 }
 .dh-label {
-  font-size: 10px;
+  font-size: var(--fs-1);
   text-transform: uppercase;
   letter-spacing: 1.2px;
   color: var(--text-muted);
@@ -1105,7 +1629,7 @@ a.welcome-import-card {
 }
 .dh-title {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: var(--fs-7);
   font-weight: 700;
   line-height: 1.35;
   color: var(--text);
@@ -1162,19 +1686,19 @@ a.welcome-import-card {
 .dh-tag {
   display: inline-block;
   padding: 0.15rem 0.55rem;
-  border-radius: 4px;
-  font-size: 10.5px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-2);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 .dh-tag.original {
-  background: #eff6ff;
-  color: #2563eb;
+  background: var(--primary-faint);
+  color: var(--primary-dark);
 }
 .dh-tag.replication {
-  background: #f5f3ff;
-  color: #7c3aed;
+  background: var(--surface-alt);
+  color: var(--text);
 }
 .dh-tag.rob-unchecked {
   background: #f3f4f6;
@@ -1189,18 +1713,18 @@ a.welcome-import-card {
   color: #6b7280;
 }
 .dh-authors {
-  font-size: 14px;
+  font-size: var(--fs-5);
   color: var(--text-secondary);
   margin-bottom: 0.15rem;
 }
 .dh-journal {
-  font-size: 13px;
+  font-size: var(--fs-4);
   color: var(--text-muted);
   font-style: italic;
   margin-bottom: 0.15rem;
 }
 .dh-doi-link {
-  font-size: 12.5px;
+  font-size: var(--fs-4);
   color: var(--primary-light);
   text-decoration: none;
   transition: color var(--transition-fast);
@@ -1219,7 +1743,7 @@ a.welcome-import-card {
   border-left: 3px solid var(--primary);
 }
 .dh-apa-label {
-  font-size: 10px;
+  font-size: var(--fs-1);
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: var(--text-muted);
@@ -1228,7 +1752,7 @@ a.welcome-import-card {
 }
 .dh-apa-text {
   font-family: var(--font-display);
-  font-size: 12.5px;
+  font-size: var(--fs-4);
   line-height: 1.55;
   color: var(--text-secondary);
   font-style: italic;
@@ -1263,7 +1787,7 @@ a.welcome-import-card {
   padding: 0.3rem 0.65rem;
   border: 1px solid var(--border-light);
   border-radius: var(--radius);
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--text-secondary);
   background: var(--white);
   cursor: pointer;
@@ -1301,7 +1825,7 @@ a.welcome-import-card {
   gap: 1rem;
 }
 .progress-label {
-  font-size: 11px;
+  font-size: var(--fs-2);
   color: var(--text-muted);
   white-space: nowrap;
   min-width: 120px;
@@ -1309,7 +1833,7 @@ a.welcome-import-card {
 .progress-track {
   flex: 1;
   height: 6px;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   background: var(--surface);
   display: flex;
   overflow: hidden;
@@ -1317,7 +1841,7 @@ a.welcome-import-card {
 }
 .progress-seg {
   height: 100%;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   transition: width 0.5s ease;
 }
 .progress-seg.success {
@@ -1330,7 +1854,7 @@ a.welcome-import-card {
   background: var(--error);
 }
 .progress-pct {
-  font-size: 12px;
+  font-size: var(--fs-3);
   font-weight: 600;
   color: var(--success);
   white-space: nowrap;
@@ -1348,7 +1872,7 @@ a.welcome-import-card {
 }
 .tab-btn {
   padding: 0.7rem 1rem;
-  font-size: 13px;
+  font-size: var(--fs-4);
   font-weight: 600;
   color: var(--text-muted);
   background: none;
@@ -1373,13 +1897,13 @@ a.welcome-import-card {
   right: 0.5rem;
   height: 2px;
   background: var(--primary);
-  border-radius: 2px 2px 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 .tab-badge {
-  font-size: 10px;
+  font-size: var(--fs-1);
   background: var(--surface);
   padding: 0.1rem 0.4rem;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   margin-left: 0.3rem;
   font-weight: 400;
   color: var(--text-muted);
@@ -1411,8 +1935,8 @@ a.welcome-import-card {
 }
 .ri-badge {
   padding: 0.2rem 0.55rem;
-  border-radius: 4px;
-  font-size: 10px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-1);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
@@ -1476,17 +2000,17 @@ a.welcome-import-card {
 }
 .ri-title {
   font-weight: 600;
-  font-size: 13.5px;
+  font-size: var(--fs-5);
   line-height: 1.4;
   margin-bottom: 0.2rem;
   color: var(--text);
 }
 .ri-meta {
-  font-size: 12px;
+  font-size: var(--fs-3);
   color: var(--text-muted);
 }
 .ri-doi {
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--primary-light);
   text-decoration: none;
   margin-top: 0.15rem;
@@ -1507,12 +2031,12 @@ a.welcome-import-card {
   gap: 0.3rem;
   padding: 0.25rem 0.55rem;
   border: 1px solid var(--border-light);
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-muted);
   transition: all var(--transition-fast);
   background: transparent;
-  font-size: 11px;
+  font-size: var(--fs-2);
   font-weight: 600;
   font-family: var(--font-body);
   white-space: nowrap;
@@ -1534,7 +2058,7 @@ a.welcome-import-card {
 .ri-expand-toggle {
   width: 100%;
   padding: 0.45rem 1rem;
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   font-weight: 600;
   color: var(--primary);
   background: none;
@@ -1552,7 +2076,7 @@ a.welcome-import-card {
 }
 .ri-expand-toggle .arrow {
   transition: transform var(--transition);
-  font-size: 10px;
+  font-size: var(--fs-1);
   display: inline-block;
 }
 .ri-expand-toggle.expanded .arrow {
@@ -1563,7 +2087,7 @@ a.welcome-import-card {
 }
 .ri-quote-text {
   font-family: var(--font-display);
-  font-size: 12.5px;
+  font-size: var(--fs-4);
   line-height: 1.6;
   color: var(--text-secondary);
   font-style: italic;
@@ -1573,7 +2097,7 @@ a.welcome-import-card {
   border-radius: 0 var(--radius) var(--radius) 0;
 }
 .ri-quote-source {
-  font-size: 11px;
+  font-size: var(--fs-2);
   color: var(--text-muted);
   margin-top: 0.35rem;
   font-style: normal;
@@ -1595,7 +2119,7 @@ a.welcome-import-card {
   flex-wrap: wrap;
 }
 .contribute-text {
-  font-size: 13px;
+  font-size: var(--fs-4);
   color: var(--text-secondary);
 }
 .contribute-text strong {
@@ -1612,7 +2136,7 @@ a.welcome-import-card {
   gap: 0.3rem;
   padding: 0.35rem 0.75rem;
   border-radius: var(--radius);
-  font-size: 12px;
+  font-size: var(--fs-3);
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -1656,7 +2180,7 @@ a.welcome-import-card {
   align-items: flex-start;
   gap: 0.75rem;
   padding: 1rem 1rem 1rem 1.1rem;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border-light);
   border-left-width: 4px;
   background: var(--white);
@@ -1698,7 +2222,7 @@ a.welcome-import-card {
   border-left-color: var(--warning);
 }
 .toast--info {
-  border-left-color: #2563eb;
+  border-left-color: var(--primary);
 }
 .toast-icon {
   flex-shrink: 0;
@@ -1713,20 +2237,20 @@ a.welcome-import-card {
   color: var(--warning);
 }
 .toast--info .toast-icon {
-  color: #2563eb;
+  color: var(--primary);
 }
 .toast-body {
   flex: 1;
   min-width: 0;
 }
 .toast-title {
-  font-size: 14px;
+  font-size: var(--fs-5);
   font-weight: 600;
   color: var(--text);
   margin-bottom: 0.2rem;
 }
 .toast-message {
-  font-size: 13px;
+  font-size: var(--fs-4);
   color: var(--text-muted);
   line-height: 1.45;
 }
@@ -1739,7 +2263,7 @@ a.welcome-import-card {
   border: none;
   cursor: pointer;
   padding: 0.2rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   color: var(--text-faint);
   transition: color var(--transition-fast);
   margin-top: 0;
@@ -1750,7 +2274,7 @@ a.welcome-import-card {
 .toast-report-btn {
   display: inline-block;
   margin-top: 6px;
-  font-size: 12px;
+  font-size: var(--fs-3);
   font-weight: 500;
   color: var(--error);
   background: none;
@@ -1793,9 +2317,9 @@ a.welcome-import-card {
 }
 .brm-title {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: var(--fs-6);
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   margin: 0;
 }
 .brm-close {
@@ -1810,7 +2334,7 @@ a.welcome-import-card {
   transition: color var(--transition-fast);
 }
 .brm-close:hover {
-  color: var(--text-primary);
+  color: var(--text);
 }
 .brm-body {
   padding: 18px 20px;
@@ -1819,7 +2343,7 @@ a.welcome-import-card {
   gap: 10px;
 }
 .brm-label {
-  font-size: 13px;
+  font-size: var(--fs-4);
   font-weight: 500;
   color: var(--text-secondary);
 }
@@ -1830,12 +2354,12 @@ a.welcome-import-card {
 .brm-textarea {
   width: 100%;
   box-sizing: border-box;
-  font-size: 13px;
+  font-size: var(--fs-4);
   font-family: inherit;
-  color: var(--text-primary);
+  color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   padding: 8px 10px;
   resize: vertical;
   outline: none;
@@ -1845,7 +2369,7 @@ a.welcome-import-card {
   border-color: var(--primary);
 }
 .brm-hint {
-  font-size: 12px;
+  font-size: var(--fs-3);
   color: var(--text-muted);
   margin: 2px 0 0;
 }
@@ -1859,12 +2383,12 @@ a.welcome-import-card {
 }
 .brm-btn-ghost {
   padding: 7px 14px;
-  font-size: 13px;
+  font-size: var(--fs-4);
   font-weight: 500;
   color: var(--text-secondary);
   background: none;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -1876,12 +2400,12 @@ a.welcome-import-card {
   align-items: center;
   gap: 6px;
   padding: 7px 16px;
-  font-size: 13px;
+  font-size: var(--fs-4);
   font-weight: 500;
   color: #fff;
   background: var(--primary);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius);
   cursor: pointer;
   transition: background var(--transition-fast);
 }
@@ -1896,7 +2420,7 @@ a.welcome-import-card {
   background: var(--neutral);
   color: rgba(255, 255, 255, 0.45);
   padding: 0.55rem 1.25rem;
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   display: flex;
   justify-content: space-between;
   flex-shrink: 0;
@@ -1923,8 +2447,97 @@ a.welcome-import-card {
   padding: 3rem;
   gap: 1rem;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: var(--fs-4);
 }
+/* ─── Study-list skeleton ───
+   Mirrors .sli geometry so rows do not reflow when real results land. */
+.sli-skel {
+  display: flex;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  align-items: flex-start;
+  border: 1px solid transparent;
+  margin-bottom: 1px;
+}
+.sli-skel-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+.sli-skel-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.sli-skel-line {
+  height: 0.6rem;
+  border-radius: var(--radius-sm);
+}
+.sli-skel-pills {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+}
+.sli-skel-pill {
+  height: 0.75rem;
+  width: 3.2rem;
+  border-radius: var(--radius-full);
+}
+/* ─── Detail-panel skeleton ───
+   Mirrors .detail-card: heading block, meta lines, then the action button row. */
+.dv-skel {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.dv-skel-head {
+  height: 1.6rem;
+  border-radius: var(--radius-sm);
+}
+.dv-skel-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
+}
+.dv-skel-btn {
+  height: 1.9rem;
+  width: 6rem;
+  border-radius: var(--radius);
+}
+
+.sli-skel-dot,
+.sli-skel-line,
+.sli-skel-pill,
+.dv-skel-head,
+.dv-skel-btn {
+  background: linear-gradient(
+      90deg,
+      var(--surface-alt) 25%,
+      var(--border-light) 50%,
+      var(--surface-alt) 75%
+    )
+    0 0 / 300% 100%;
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+}
+/* Reduced motion freezes the sweep; the track colour still reads as a placeholder. */
+@keyframes skel-shimmer {
+  to {
+    background-position: -150% 0;
+  }
+}
+
 .loading-spinner {
   width: 28px;
   height: 28px;
@@ -1956,7 +2569,7 @@ a.welcome-import-card {
   color: var(--text-muted);
 }
 .loading-pane-text {
-  font-size: 14px;
+  font-size: var(--fs-5);
   color: var(--text-muted);
 }
 
@@ -1977,19 +2590,19 @@ a.welcome-import-card {
   margin-bottom: 0.5rem;
 }
 .no-results-title {
-  font-size: 16px;
+  font-size: var(--fs-6);
   font-weight: 600;
   color: var(--text-secondary);
 }
 .no-results-sub {
-  font-size: 13px;
+  font-size: var(--fs-4);
   color: var(--text-muted);
 }
 
 /* No results in left panel list */
 .sli-empty {
   padding: 2rem 1.25rem;
-  font-size: 13px;
+  font-size: var(--fs-4);
   color: var(--text-muted);
   text-align: center;
 }
@@ -2004,7 +2617,7 @@ a.welcome-import-card {
   padding: 2rem 1rem;
   text-align: center;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: var(--fs-4);
 }
 
 /* Toast notification */
@@ -2016,7 +2629,7 @@ a.welcome-import-card {
   color: var(--white);
   padding: 0.5rem 1rem;
   border-radius: var(--radius);
-  font-size: 12px;
+  font-size: var(--fs-3);
   font-weight: 600;
   box-shadow: var(--shadow-md);
   z-index: 1000;
@@ -2041,7 +2654,7 @@ a.welcome-import-card {
 .alert-dialog {
   position: relative;
   background: var(--white);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.04),
     0 12px 36px rgba(17, 24, 39, 0.18);
@@ -2062,7 +2675,7 @@ a.welcome-import-card {
   color: var(--text-muted);
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: var(--radius);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2110,7 +2723,7 @@ a.welcome-import-card {
 .alert-dialog-title {
   margin: 0 0 0.4rem;
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: var(--fs-7);
   font-weight: 600;
   color: var(--text);
   letter-spacing: -0.01em;
@@ -2118,7 +2731,7 @@ a.welcome-import-card {
 
 .alert-dialog-message {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--fs-5);
   line-height: 1.55;
   color: var(--text-muted);
 }
@@ -2127,8 +2740,8 @@ a.welcome-import-card {
   margin-top: 0.85rem;
   padding: 0.65rem 0.85rem;
   background: var(--primary-faint);
-  border-radius: 8px;
-  font-size: 12.5px;
+  border-radius: var(--radius);
+  font-size: var(--fs-4);
   line-height: 1.5;
   color: var(--text);
   text-align: left;
@@ -2137,10 +2750,10 @@ a.welcome-import-card {
 .alert-dialog-hint code {
   font-family:
     ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-  font-size: 12px;
+  font-size: var(--fs-3);
   background: var(--white);
   padding: 0.05rem 0.35rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--primary-faint);
   color: var(--primary-dark);
 }
@@ -2155,10 +2768,10 @@ a.welcome-import-card {
   background: var(--primary);
   color: var(--white);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
   padding: 0.6rem 1.4rem;
   font-family: var(--font-body);
-  font-size: 13.5px;
+  font-size: var(--fs-5);
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -2302,11 +2915,11 @@ a.welcome-import-card {
     background: transparent;
     border: 1px solid var(--border-light);
     color: var(--text-muted);
-    font-size: 11px;
+    font-size: var(--fs-2);
     font-weight: 600;
     font-family: var(--font-body);
     padding: 0.2rem 0.6rem;
-    border-radius: 100px;
+    border-radius: var(--radius-full);
     cursor: pointer;
     transition: all var(--transition-fast);
     white-space: nowrap;
@@ -2356,7 +2969,7 @@ a.welcome-import-card {
     border: none;
     background: transparent;
     color: var(--text);
-    font-size: 15px;
+    font-size: var(--fs-6);
     font-family: var(--font-body);
     outline: none;
     padding: 0.5rem 0.4rem;
@@ -2370,9 +2983,9 @@ a.welcome-import-card {
     gap: 0.25rem;
     background: var(--primary-faint);
     border: 1px solid rgba(133, 57, 83, 0.2);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     padding: 0.15rem 0.25rem 0.15rem 0.45rem;
-    font-size: 12px;
+    font-size: var(--fs-3);
     color: var(--primary);
     white-space: nowrap;
     flex-shrink: 0;
@@ -2383,7 +2996,7 @@ a.welcome-import-card {
     border: none;
     color: var(--primary-light);
     cursor: pointer;
-    font-size: 14px;
+    font-size: var(--fs-5);
     line-height: 1;
     padding: 0 0.15rem;
     display: flex;
@@ -2418,7 +3031,7 @@ a.welcome-import-card {
   .topbar-mobile-link {
     color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
-    font-size: 14px;
+    font-size: var(--fs-5);
     padding: 0.65rem 1rem;
     transition: background var(--transition-fast);
   }
@@ -2429,7 +3042,7 @@ a.welcome-import-card {
   .topbar-mobile-cta {
     color: var(--white);
     text-decoration: none;
-    font-size: 14px;
+    font-size: var(--fs-5);
     font-weight: 600;
     padding: 0.65rem 1rem;
     margin: 0.25rem 0.75rem;
@@ -2498,7 +3111,7 @@ a.welcome-import-card {
   .ab-group:first-child .ab-btn {
     justify-content: center;
     min-height: 38px;
-    font-size: 13px;
+    font-size: var(--fs-4);
   }
   .ab-group:first-child .ab-btn:only-child {
     grid-column: 1 / -1;
@@ -2510,7 +3123,7 @@ a.welcome-import-card {
     gap: 0.35rem;
   }
   .ab-btn {
-    font-size: 11px;
+    font-size: var(--fs-2);
     padding: 0.35rem 0.3rem;
     min-height: 32px;
     justify-content: center;
@@ -2531,7 +3144,7 @@ a.welcome-import-card {
     flex: 1;
     text-align: center;
     padding: 0.65rem 0.5rem;
-    font-size: 13px;
+    font-size: var(--fs-4);
     min-height: 44px;
   }
   .rep-list {
@@ -2574,7 +3187,7 @@ a.welcome-import-card {
     border-right: 1px solid var(--border-light);
     padding: 0.55rem 0.3rem;
     min-height: 40px;
-    font-size: 12px;
+    font-size: var(--fs-3);
   }
   .ri-action:last-child {
     border-right: none;
@@ -2584,7 +3197,7 @@ a.welcome-import-card {
   }
   .ri-badge {
     min-width: auto;
-    font-size: 9px;
+    font-size: var(--fs-1);
     padding: 0.15rem 0.45rem;
   }
   .progress-section {
@@ -2617,40 +3230,23 @@ a.welcome-import-card {
     margin-left: 0.5rem;
   }
 
-  /* Welcome state */
+  /* Centred pane (DOI page loading) */
   .welcome-state {
-    padding: 1.5rem 1.25rem;
+    padding: var(--space-5) var(--space-4);
   }
   .welcome-icon {
     width: 48px;
     height: 48px;
-    margin-bottom: 0.75rem;
-    border-radius: 12px;
-  }
-  .welcome-state h1 {
-    font-size: 1.1rem;
-    margin-bottom: 0.35rem;
-  }
-  .welcome-state p {
-    font-size: 13px;
-    margin-bottom: 1.25rem;
-  }
-  .welcome-examples {
-    grid-template-columns: 1fr;
-    max-width: 100%;
-  }
-  .welcome-doi {
-    padding: 0.65rem 0.85rem;
-    font-size: 13px;
+    margin-bottom: var(--space-3);
   }
 }
 /* ─── Phone-specific size overrides ─── */
 @media (max-width: 640px) {
   .dh-title {
-    font-size: 1rem;
+    font-size: var(--fs-6);
   }
   .dh-authors {
-    font-size: 13px;
+    font-size: var(--fs-4);
   }
 }
 @media (max-width: 400px) {
@@ -2664,10 +3260,10 @@ a.welcome-import-card {
     padding: 1rem;
   }
   .dh-title {
-    font-size: 0.95rem;
+    font-size: var(--fs-6);
   }
   .dh-apa-text {
-    font-size: 11.5px;
+    font-size: var(--fs-3);
   }
   .action-bar {
     padding: 0.4rem 0.75rem;
@@ -2679,20 +3275,20 @@ a.welcome-import-card {
     padding: 0.5rem 0.75rem 1rem;
   }
   .ri-title {
-    font-size: 12.5px;
+    font-size: var(--fs-4);
   }
   .ri-meta {
-    font-size: 11px;
+    font-size: var(--fs-2);
   }
   .tab-btn {
-    font-size: 12px;
+    font-size: var(--fs-3);
     padding: 0.6rem 0.5rem;
   }
   .contribute-bar {
     margin: 0.5rem 0.75rem 1rem;
   }
   .footer-bar {
-    font-size: 10.5px;
+    font-size: var(--fs-2);
   }
 }
 
@@ -2749,7 +3345,7 @@ a.welcome-import-card {
 
 .cim-title {
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: var(--fs-6);
   font-weight: 700;
   color: var(--text);
 }
@@ -2758,7 +3354,7 @@ a.welcome-import-card {
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: 15px;
+  font-size: var(--fs-6);
   cursor: pointer;
   width: 30px;
   height: 30px;
@@ -2784,7 +3380,7 @@ a.welcome-import-card {
   justify-content: center;
   padding: 3.5rem 2rem;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: var(--fs-5);
 }
 
 /* ── KPI band ── */
@@ -2812,14 +3408,14 @@ a.welcome-import-card {
 
 .cim-kpi-val {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: var(--fs-8);
   font-weight: 700;
   color: var(--primary);
   line-height: 1.1;
 }
 
 .cim-kpi-lbl {
-  font-size: 10.5px;
+  font-size: var(--fs-2);
   color: var(--primary-light);
   margin-top: 3px;
   font-weight: 600;
@@ -2847,7 +3443,7 @@ a.welcome-import-card {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem 1.1rem;
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--text-secondary);
 }
 
@@ -2860,13 +3456,13 @@ a.welcome-import-card {
 .cim-swatch {
   width: 10px;
   height: 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
   display: inline-block;
 }
 
 .cim-footnote {
-  font-size: 10.5px;
+  font-size: var(--fs-2);
   color: var(--text-muted);
   margin: 0;
   white-space: nowrap;
@@ -2885,7 +3481,7 @@ a.welcome-import-card {
   font-family: var(--font-display);
   line-height: 1.5;
   font-weight: 100;
-  font-size: small;
+  font-size: var(--fs-4);
   font-style: italic;
 }
 .reference em {
@@ -2934,14 +3530,14 @@ a.welcome-import-card {
 
 .rim-title {
   font-family: var(--font-display);
-  font-size: 17px;
+  font-size: var(--fs-7);
   font-weight: 700;
   color: var(--text);
   margin: 0 0 3px;
 }
 
 .rim-subtitle {
-  font-size: 12.5px;
+  font-size: var(--fs-4);
   color: var(--text-muted);
   margin: 0;
   line-height: 1.4;
@@ -2976,7 +3572,7 @@ a.welcome-import-card {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  font-size: 12.5px;
+  font-size: var(--fs-4);
   font-family: var(--font-body);
   font-weight: 600;
   color: var(--text-muted);
@@ -3019,7 +3615,7 @@ a.welcome-import-card {
   border-radius: var(--radius);
   padding: 10px 12px;
   font-family: "Menlo", "Consolas", monospace;
-  font-size: 12px;
+  font-size: var(--fs-3);
   line-height: 1.6;
   color: var(--text);
   background: var(--surface);
@@ -3065,7 +3661,7 @@ a.welcome-import-card {
   color: var(--primary);
 }
 .rim-drop-label {
-  font-size: 13px;
+  font-size: var(--fs-4);
   color: var(--text-secondary);
   margin: 0;
 }
@@ -3074,19 +3670,19 @@ a.welcome-import-card {
   text-decoration: underline;
 }
 .rim-drop-formats {
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--text-faint);
   margin: 0;
   letter-spacing: 0.03em;
 }
 .rim-drop-filename {
-  font-size: 13px;
+  font-size: var(--fs-4);
   font-weight: 700;
   color: var(--primary);
   margin: 0;
 }
 .rim-drop-change {
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--text-muted);
   margin: 0;
 }
@@ -3095,7 +3691,7 @@ a.welcome-import-card {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: var(--fs-4);
   color: var(--success);
   background: var(--success-bg);
   border: 1px solid var(--success-border, var(--success));
@@ -3109,7 +3705,7 @@ a.welcome-import-card {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--fs-3);
   color: var(--text-muted);
   margin-top: 10px;
   line-height: 1.5;
@@ -3155,7 +3751,7 @@ a.welcome-import-card {
   padding: 4px 0;
 }
 .rim-osf-label {
-  font-size: 12px;
+  font-size: var(--fs-3);
   font-weight: 700;
   color: var(--text-secondary);
 }
@@ -3165,7 +3761,7 @@ a.welcome-import-card {
   border-radius: var(--radius);
   padding: 9px 12px;
   font-family: "Menlo", "Consolas", monospace;
-  font-size: 13px;
+  font-size: var(--fs-4);
   color: var(--text);
   background: var(--surface);
   outline: none;
@@ -3180,14 +3776,14 @@ a.welcome-import-card {
   color: var(--text-faint);
 }
 .rim-osf-hint {
-  font-size: 12px;
+  font-size: var(--fs-3);
   color: var(--text-muted);
   margin: 0;
   line-height: 1.5;
 }
 
 .rim-file-preview-label {
-  font-size: 11px;
+  font-size: var(--fs-2);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -3196,7 +3792,7 @@ a.welcome-import-card {
 }
 .rim-file-preview {
   font-family: "Menlo", "Consolas", monospace;
-  font-size: 11px;
+  font-size: var(--fs-2);
   line-height: 1.5;
   color: var(--text-secondary);
   background: var(--surface);
@@ -3210,7 +3806,7 @@ a.welcome-import-card {
 }
 
 .rim-error {
-  font-size: 12.5px;
+  font-size: var(--fs-4);
   color: var(--error);
   background: var(--error-bg);
   border: 1px solid var(--error-border);
@@ -3243,13 +3839,13 @@ a.welcome-import-card {
 }
 
 .rim-progress-text {
-  font-size: 14px;
+  font-size: var(--fs-5);
   font-weight: 600;
   color: var(--text);
   margin: 0;
 }
 .rim-progress-sub {
-  font-size: 12px;
+  font-size: var(--fs-3);
   color: var(--text-muted);
   margin: 0;
 }
@@ -3257,13 +3853,13 @@ a.welcome-import-card {
   width: 100%;
   height: 4px;
   background: var(--border-light);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 .rim-progress-bar-fill {
   height: 100%;
   background: var(--primary);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   transition: width 0.2s ease;
 }
 
@@ -3276,7 +3872,7 @@ a.welcome-import-card {
   background: var(--surface);
   border-top: 1px solid var(--border-light);
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: var(--fs-3);
 }
 .rim-sum-item {
   font-weight: 700;
@@ -3337,7 +3933,7 @@ a.welcome-import-card {
   width: 16px;
   height: 16px;
   border: 1.5px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3364,12 +3960,12 @@ a.welcome-import-card {
 }
 
 .rim-badge {
-  font-size: 10px;
+  font-size: var(--fs-1);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 1px 6px;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 .rim-badge-direct {
@@ -3391,7 +3987,7 @@ a.welcome-import-card {
 
 .rim-row-doi {
   font-family: "Menlo", "Consolas", monospace;
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--text-secondary);
 }
 
@@ -3404,14 +4000,14 @@ a.welcome-import-card {
 .rim-doi-edit-btn {
   background: none;
   border: 1px solid var(--border-light);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0.2rem 0.45rem;
   cursor: pointer;
   color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.72rem;
+  font-size: var(--fs-3);
   font-family: var(--font-body);
   font-weight: 500;
   opacity: 0;
@@ -3433,10 +4029,10 @@ a.welcome-import-card {
 
 .rim-doi-input {
   font-family: "Menlo", "Consolas", monospace;
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--text);
   border: 1px solid var(--primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0.1rem 0.4rem;
   outline: none;
   background: var(--white);
@@ -3444,7 +4040,7 @@ a.welcome-import-card {
 }
 
 .rim-row-title {
-  font-size: 12.5px;
+  font-size: var(--fs-4);
   font-weight: 600;
   color: var(--text);
   margin: 0 0 2px;
@@ -3454,7 +4050,7 @@ a.welcome-import-card {
 }
 
 .rim-row-raw {
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--text-muted);
   margin: 0;
   white-space: nowrap;
@@ -3466,7 +4062,7 @@ a.welcome-import-card {
   display: flex;
   align-items: flex-start;
   gap: 5px;
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   color: var(--warning);
   background: var(--warning-bg);
   border: 1px solid var(--warning-border);
@@ -3498,7 +4094,7 @@ a.welcome-import-card {
 
 .rim-btn-ghost {
   padding: 7px 14px;
-  font-size: 13px;
+  font-size: var(--fs-4);
   font-family: var(--font-body);
   font-weight: 600;
   color: var(--text-secondary);
@@ -3518,7 +4114,7 @@ a.welcome-import-card {
   align-items: center;
   gap: 6px;
   padding: 7px 16px;
-  font-size: 13px;
+  font-size: var(--fs-4);
   font-family: var(--font-body);
   font-weight: 700;
   color: var(--white);
@@ -3555,7 +4151,7 @@ a.welcome-import-card {
   align-items: center;
   gap: 5px;
   padding: 0.35rem 0.6rem;
-  font-size: 12px;
+  font-size: var(--fs-3);
   font-family: var(--font-body);
   font-weight: 600;
   color: rgba(255, 255, 255, 0.5);
@@ -3616,7 +4212,7 @@ a.welcome-import-card {
 
 .adv-modal-title {
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: var(--fs-7);
   font-weight: 700;
   color: var(--text);
   margin: 0;
@@ -3629,7 +4225,7 @@ a.welcome-import-card {
   border: 1px solid var(--border);
   background: none;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: var(--fs-2);
   font-weight: 600;
   font-family: var(--font-body);
   cursor: pointer;
@@ -3651,7 +4247,7 @@ a.welcome-import-card {
 }
 
 .adv-help-panel {
-  background: var(--bg-subtle, #f8f7f8);
+  background: var(--primary-faint);
   border: 1px solid var(--border-light);
   border-radius: var(--radius);
   padding: 0.75rem 1rem;
@@ -3670,7 +4266,7 @@ a.welcome-import-card {
 }
 
 .adv-help-col-label {
-  font-size: 0.65rem;
+  font-size: var(--fs-1);
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -3682,7 +4278,7 @@ a.welcome-import-card {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
-  font-size: 0.78rem;
+  font-size: var(--fs-3);
   color: var(--text-secondary);
   line-height: 1.4;
 }
@@ -3695,8 +4291,8 @@ a.welcome-import-card {
 .adv-help-chip {
   display: inline-block;
   padding: 0.1rem 0.45rem;
-  border-radius: 20px;
-  font-size: 0.68rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-2);
   font-weight: 700;
   flex-shrink: 0;
   letter-spacing: 0.3px;
@@ -3709,7 +4305,7 @@ a.welcome-import-card {
 
 .adv-help-hint {
   margin: 0.55rem 0 0;
-  font-size: 0.73rem;
+  font-size: var(--fs-3);
   color: var(--text-muted);
 }
 
@@ -3718,8 +4314,8 @@ a.welcome-import-card {
   display: inline-block;
   padding: 0 0.3rem;
   border: 1px solid var(--border);
-  border-radius: 3px;
-  font-size: 0.68rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-2);
   font-family: var(--font-mono, monospace);
   background: var(--white);
   color: var(--text);
@@ -3732,7 +4328,7 @@ a.welcome-import-card {
   border-top: 1px solid var(--border-light);
 }
 .adv-help-wildcards-title {
-  font-size: 0.68rem;
+  font-size: var(--fs-2);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -3744,14 +4340,14 @@ a.welcome-import-card {
   grid-template-columns: auto 1fr;
   gap: 0.3rem 0.75rem;
   align-items: baseline;
-  font-size: 0.78rem;
+  font-size: var(--fs-3);
 }
 .adv-help-wildcards-grid code {
   font-family: var(--font-mono, monospace);
-  font-size: 0.75rem;
+  font-size: var(--fs-3);
   background: var(--white);
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
   padding: 0.05rem 0.35rem;
   color: #853953;
   white-space: nowrap;
@@ -3765,7 +4361,7 @@ a.welcome-import-card {
   background: rgba(133, 57, 83, 0.09);
   color: var(--primary);
   padding: 0 0.22rem;
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .adv-modal-close {
@@ -3798,7 +4394,7 @@ a.welcome-import-card {
 }
 
 .adv-section-label {
-  font-size: 0.67rem;
+  font-size: var(--fs-2);
   font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -3834,7 +4430,7 @@ a.welcome-import-card {
 .adv-bucket-icon {
   width: 20px;
   height: 20px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3853,13 +4449,13 @@ a.welcome-import-card {
 }
 
 .adv-bucket-label {
-  font-size: 0.78rem;
+  font-size: var(--fs-3);
   font-weight: 700;
   color: var(--text);
 }
 
 .adv-bucket-sub {
-  font-size: 0.7rem;
+  font-size: var(--fs-2);
   color: var(--text-muted);
 }
 
@@ -3879,7 +4475,7 @@ a.welcome-import-card {
   min-width: 80px;
   border: none;
   outline: none;
-  font-size: 0.82rem;
+  font-size: var(--fs-4);
   font-family: var(--font-body);
   background: transparent;
   color: var(--text);
@@ -3896,9 +4492,9 @@ a.welcome-import-card {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   padding: 0.15rem 0.35rem 0.15rem 0.55rem;
-  font-size: 0.77rem;
+  font-size: var(--fs-3);
   font-weight: 500;
   white-space: nowrap;
   line-height: 1.35;
@@ -3925,7 +4521,7 @@ a.welcome-import-card {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--fs-4);
   line-height: 1;
   padding: 0 0.1rem;
   opacity: 0.5;
@@ -3971,7 +4567,7 @@ a.welcome-import-card {
 }
 
 .yr-label {
-  font-size: 0.82rem;
+  font-size: var(--fs-4);
   font-weight: 700;
   color: var(--primary);
 }
@@ -3988,14 +4584,14 @@ a.welcome-import-card {
   width: 100%;
   height: 4px;
   background: var(--border-light);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .yr-track-fill {
   position: absolute;
   height: 4px;
   background: var(--primary);
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .yr-input {
@@ -4054,10 +4650,10 @@ a.welcome-import-card {
   align-items: center;
   gap: 0.35rem;
   padding: 0.28rem 0.75rem;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   background: var(--white);
-  font-size: 0.8rem;
+  font-size: var(--fs-4);
   font-family: var(--font-body);
   color: var(--text-secondary);
   cursor: pointer;
@@ -4105,7 +4701,7 @@ a.welcome-import-card {
 }
 
 .adv-qs-label {
-  font-size: 0.65rem;
+  font-size: var(--fs-1);
   font-weight: 700;
   letter-spacing: 0.7px;
   text-transform: uppercase;
@@ -4113,7 +4709,7 @@ a.welcome-import-card {
 }
 
 .adv-qs-text {
-  font-size: 0.82rem;
+  font-size: var(--fs-4);
   color: var(--text-secondary);
   line-height: 1.5;
 }
@@ -4140,7 +4736,7 @@ a.welcome-import-card {
   color: var(--text-secondary);
   padding: 0.45rem 1rem;
   border-radius: var(--radius);
-  font-size: 0.82rem;
+  font-size: var(--fs-4);
   font-weight: 500;
   font-family: var(--font-body);
   cursor: pointer;
@@ -4159,7 +4755,7 @@ a.welcome-import-card {
   border: none;
   padding: 0.45rem 1.25rem;
   border-radius: var(--radius);
-  font-size: 0.82rem;
+  font-size: var(--fs-4);
   font-weight: 700;
   font-family: var(--font-body);
   cursor: pointer;
@@ -4181,7 +4777,7 @@ a.welcome-import-card {
   align-items: center;
   gap: 5px;
   padding: 0.35rem 0.6rem;
-  font-size: 12px;
+  font-size: var(--fs-3);
   font-family: var(--font-body);
   font-weight: 600;
   border-radius: var(--radius);
@@ -4224,20 +4820,20 @@ a.welcome-import-card {
   padding: 10px 20px;
   background: #fffbeb;
   border-bottom: 1px solid #fde68a;
-  font-size: 12px;
+  font-size: var(--fs-3);
   color: #92400e;
   font-family: var(--font-body);
 }
 
 .topbar-adv-badge {
-  font-size: 10px;
+  font-size: var(--fs-1);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.55);
   background: rgba(133, 57, 83, 0.4);
   border: 1px solid rgba(133, 57, 83, 0.6);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0.15rem 0.4rem;
   white-space: nowrap;
   flex-shrink: 0;
@@ -4261,10 +4857,10 @@ a.welcome-import-card {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid;
   padding: 0.1rem 0.35rem;
-  font-size: 11.5px;
+  font-size: var(--fs-3);
   font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
@@ -4296,7 +4892,7 @@ a.welcome-import-card {
   border-color: rgba(133, 57, 83, 0.5);
 }
 .topbar-adv-chip-pre {
-  font-size: 10px;
+  font-size: var(--fs-1);
   font-weight: 700;
   opacity: 0.65;
   text-transform: uppercase;
@@ -4310,7 +4906,7 @@ a.welcome-import-card {
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: transparent;
   color: rgba(255, 255, 255, 0.4);
@@ -4348,7 +4944,7 @@ a.welcome-import-card {
   display: none;
 }
 .mob-adv-edit-btn {
-  font-size: 12px;
+  font-size: var(--fs-3);
   font-weight: 600;
   font-family: var(--font-body);
   color: rgba(255, 255, 255, 0.7);

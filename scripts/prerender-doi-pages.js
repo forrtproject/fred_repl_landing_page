@@ -140,8 +140,7 @@ function buildPageMeta(paper) {
   // slash-less form as canonical makes Google override it with the redirect target.
   const pageUrl = `${SITE_URL}/doi/${doi}/`;
 
-  const jsonLd = JSON.stringify({
-    "@context": "https://schema.org",
+  const article = {
     "@type": "ScholarlyArticle",
     name: title,
     author: authors.map((a) => ({
@@ -188,11 +187,29 @@ function buildPageMeta(paper) {
             })),
           ]
         : undefined,
+  };
+
+  const breadcrumb = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "FLoRA Replication Atlas",
+        item: `${SITE_URL}/`,
+      },
+      { "@type": "ListItem", position: 2, name: title, item: pageUrl },
+    ],
+  };
+
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [article, breadcrumb],
   });
 
   const ogImageUrl = `${SITE_URL}/doi/${doi}/og.png`;
   return {
-    title: `${title} — FLoRA Replication Atlas`,
+    title: `${title} | FLoRA Replication Atlas`,
     description,
     keywords,
     pageUrl,
@@ -200,6 +217,105 @@ function buildPageMeta(paper) {
     authors,
     ogImageUrl,
   };
+}
+
+function attemptLine(entry, verb) {
+  const by = formatAuthors(entry.authors);
+  const year = entry.year ? ` (${entry.year})` : "";
+  const name = entry.title || `${verb} attempt`;
+  const link = entry.doi
+    ? ` <a href="https://doi.org/${escHtml(entry.doi)}">https://doi.org/${escHtml(entry.doi)}</a>`
+    : "";
+  const outcome = entry.outcome
+    ? ` Outcome recorded: ${escHtml(entry.outcome)}.`
+    : " No outcome recorded.";
+  const quote = entry.outcome_quote
+    ? ` <q>${escHtml(String(entry.outcome_quote).split("||")[0].trim().slice(0, 300))}</q>`
+    : "";
+  return `<li><strong>${escHtml(name)}</strong>, ${escHtml(by)}${year}.${outcome}${quote}${link}</li>`;
+}
+
+// Every DOI page links to the next few in the list, so the 4,000-plus pages form
+// a crawlable ring instead of being reachable only from the XML sitemap.
+const RELATED_COUNT = 6;
+function relatedLinks(dois, index, papers) {
+  const out = [];
+  for (let k = 1; k <= RELATED_COUNT && k < dois.length; k++) {
+    const other = dois[(index + k) % dois.length];
+    const label = papers[other]?.title || other;
+    out.push(
+      `<li><a href="${SITE_URL}/doi/${escHtml(other)}/">${escHtml(label.length > 90 ? label.slice(0, 89) + "\u2026" : label)}</a></li>`,
+    );
+  }
+  return out.join("\n        ");
+}
+
+function renderBody(paper, dois, index, papers) {
+  const doi = paper.doi;
+  const title = paper.title || doi;
+  const authors = Array.isArray(paper.authors) ? paper.authors : [];
+  const authorNames = authors.map((a) => `${a.given} ${a.family}`).join(", ");
+  const replications = paper.record?.replications || [];
+  const reproductions = paper.record?.reproductions || [];
+
+  const venue = [paper.journal, paper.year]
+    .filter(Boolean)
+    .map((x) => escHtml(String(x)))
+    .join(", ");
+
+  const parts = [];
+  if (replications.length > 0) {
+    parts.push(
+      `${replications.length} ${replications.length === 1 ? "replication" : "replications"}`,
+    );
+  }
+  if (reproductions.length > 0) {
+    parts.push(
+      `${reproductions.length} ${reproductions.length === 1 ? "reproduction" : "reproductions"}`,
+    );
+  }
+  const summary =
+    parts.length > 0
+      ? `The atlas records ${parts.join(" and ")} of this study.`
+      : "The atlas has no replication or reproduction of this study on record yet.";
+
+  const repSection =
+    replications.length > 0
+      ? `<h3>Replications</h3>
+        <ul>
+        ${replications.map((r) => attemptLine(r, "Replication")).join("\n        ")}
+        </ul>`
+      : "";
+  const reproSection =
+    reproductions.length > 0
+      ? `<h3>Reproductions</h3>
+        <ul>
+        ${reproductions.map((r) => attemptLine(r, "Reproduction")).join("\n        ")}
+        </ul>`
+      : "";
+
+  const noneNote =
+    parts.length === 0
+      ? `<p>An absent record is not evidence that the finding failed to replicate. It means no attempt has been indexed here yet. <a href="${SITE_URL}/">Search the atlas</a> for related work, or send in a replication we have missed.</p>`
+      : "";
+
+  return `<main class="ssg">
+        <p class="ssg-meta"><a href="${SITE_URL}/">FLoRA Replication Atlas</a></p>
+        <h1>${escHtml(title)}</h1>
+        ${authorNames ? `<p class="ssg-meta">${escHtml(authorNames)}</p>` : ""}
+        <p class="ssg-meta">${venue}${venue ? ". " : ""}DOI <a href="https://doi.org/${escHtml(doi)}">${escHtml(doi)}</a></p>
+
+        <h2>Has this study been replicated?</h2>
+        <p>${summary}</p>
+        ${repSection}
+        ${reproSection}
+        ${noneNote}
+
+        <h2>Other studies in the atlas</h2>
+        <ul class="ssg-related">
+        ${relatedLinks(dois, index, papers)}
+        </ul>
+      </main>`;
 }
 
 function escSvg(str) {
@@ -432,6 +548,14 @@ function injectMeta(html, meta) {
     `<script type="application/ld+json">\n    ${jsonLd}\n    </script>`,
   );
 
+  // Swap the landing page's crawlable copy for this paper's own.
+  if (meta.body) {
+    html = html.replace(
+      /<!--ssg-start-->[\s\S]*?<!--ssg-end-->/,
+      `<!--ssg-start-->\n      ${meta.body}\n      <!--ssg-end-->`,
+    );
+  }
+
   // Inject per-author OG tags before </head>
   if (authors.length > 0) {
     const authorTags = authors
@@ -450,7 +574,12 @@ async function main() {
   const baseHtml = await readFile(join(DIST_DIR, "index.html"), "utf-8");
 
   console.log("Fetching DOI list...");
-  const dois = await fetchAllDois();
+  let dois = await fetchAllDois();
+  // Local smoke-testing hook: PRERENDER_LIMIT=3 npm run prerender-doi-pages
+  if (process.env.PRERENDER_LIMIT) {
+    dois = dois.slice(0, Number(process.env.PRERENDER_LIMIT));
+    console.log(`PRERENDER_LIMIT set, building ${dois.length} pages only.`);
+  }
   console.log(
     `Found ${dois.length} DOIs. Fetching paper data in batches of ${BATCH_SIZE}...`,
   );
@@ -462,7 +591,8 @@ async function main() {
   let withMeta = 0;
   let withoutMeta = 0;
 
-  for (const doi of dois) {
+  for (let i = 0; i < dois.length; i++) {
+    const doi = dois[i];
     const paper = papers[doi];
     const outDir = join(DIST_DIR, "doi", doi);
     await mkdir(outDir, { recursive: true });
@@ -470,6 +600,7 @@ async function main() {
     if (paper) {
       withMeta++;
       const meta = buildPageMeta(paper);
+      meta.body = renderBody(paper, dois, i, papers);
       const html = injectMeta(baseHtml, meta);
       await writeFile(join(outDir, "index.html"), html, "utf-8");
       try {
@@ -479,8 +610,14 @@ async function main() {
         console.warn(`  OG image failed for ${doi}: ${e.message}`);
       }
     } else {
+      // No API data for this DOI. Ship the shell without the landing copy so the
+      // page never presents the home page's text under a DOI URL.
       withoutMeta++;
-      await writeFile(join(outDir, "index.html"), baseHtml, "utf-8");
+      const fallback = baseHtml.replace(
+        /<!--ssg-start-->[\s\S]*?<!--ssg-end-->/,
+        `<!--ssg-start--><main class="ssg"><h1>${escHtml(doi)}</h1><p>This record is in the atlas but its metadata could not be loaded at build time. <a href="${SITE_URL}/">Search the atlas</a> or open <a href="https://doi.org/${escHtml(doi)}">https://doi.org/${escHtml(doi)}</a>.</p></main><!--ssg-end-->`,
+      );
+      await writeFile(join(outDir, "index.html"), fallback, "utf-8");
     }
 
     const written = withMeta + withoutMeta;

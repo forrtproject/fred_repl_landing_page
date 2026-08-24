@@ -13,8 +13,8 @@ const escapeHtml = (value: string): string =>
     .replaceAll("'", "&#39;");
 
 // True only if the leading `{` is closed by the trailing `}` (i.e. the two are
-// a matching pair), so that a value like `{A} and {B}` — where the brace depth
-// returns to 0 before the end — is left intact instead of being corrupted.
+// a matching pair), so that a value like `{A} and {B}`, where the brace depth
+// returns to 0 before the end, is left intact instead of being corrupted.
 const bracesArePair = (value: string): boolean => {
   let depth = 0;
   for (let i = 0; i < value.length; i += 1) {

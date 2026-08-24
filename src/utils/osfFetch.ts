@@ -52,7 +52,7 @@ export async function fetchOsfDois(
     if (signal?.aborted) throw e;
   }
 
-  // Fall back to node (project) — grab first PDF or first file
+  // Fall back to node (project): grab first PDF or first file
   if (!downloadUrl) {
     try {
       const res = await fetch(

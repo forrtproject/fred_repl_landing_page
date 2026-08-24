@@ -1,3 +1,11 @@
+import {
+  ChartIcon,
+  CopyIcon as Copy,
+  DownloadIcon as Download,
+  ExternalLinkIcon as ExternalLink,
+  FlagIcon as Flag,
+  LinkIcon as Link,
+} from "../icons";
 import { createSignal, createEffect, For, Show, onCleanup } from "solid-js";
 import type { OriginalPaper, ReplicationItem } from "../../@types";
 import { formatReplicationResponse } from "../../api/formatter";
@@ -13,75 +21,23 @@ type DetailViewProps = {
 type TabId = "replications" | "reproductions" | "originals";
 
 const ExternalLinkIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-  >
-    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
-    <polyline points="15,3 21,3 21,9" />
-    <line x1="10" y1="14" x2="21" y2="3" />
-  </svg>
+  <ExternalLink size={12} />
 );
 
 const DownloadIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-  >
-    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-    <polyline points="7,10 12,15 17,10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
+  <Download size={12} />
 );
 
 const CopyIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-  >
-    <rect x="9" y="9" width="13" height="13" rx="2" />
-    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-  </svg>
+  <Copy size={12} />
 );
 
 const LinkIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-  >
-    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-  </svg>
+  <Link size={12} />
 );
 
 const FlagIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-  >
-    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-    <line x1="4" y1="22" x2="4" y2="15" />
-  </svg>
+  <Flag size={12} />
 );
 
 export const DetailView = (props: DetailViewProps) => {
@@ -342,9 +298,7 @@ export const DetailView = (props: DetailViewProps) => {
               onClick={() => setShowCitations(true)}
               title="View citation timeline"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="12" width="4" height="9" /><rect x="10" y="7" width="4" height="14" /><rect x="17" y="3" width="4" height="18" />
-              </svg>
+              <ChartIcon size={12} />
               Citations
             </button>
           </div>

@@ -30,7 +30,7 @@ export const normalizeOutcome = (outcome?: string): string =>
         .replace(/\s+/g, " ")
         .replace(/\s*,\s*/g, ", ");
 
-/** "Authors (Year)" — omitting whichever part is missing; empty string when both are. */
+/** "Authors (Year)", omitting whichever part is missing; empty string when both are. */
 export const authorYearLine = (authors?: Author[], year?: string | number) => {
     const parts = [formatAuthors(authors), year ? `(${year})` : ""];
     return parts.filter(Boolean).join(" ");

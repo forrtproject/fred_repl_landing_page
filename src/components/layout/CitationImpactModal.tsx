@@ -1,3 +1,4 @@
+import { AlertCircleIcon, ChartIcon } from "../icons";
 import { createEffect, createMemo, Show, For, onCleanup } from "solid-js";
 import type { OriginalPaper, CitationTimelineEntry } from "../../@types";
 import { createFocusTrap } from "../../utils/modalA11y";
@@ -403,18 +404,7 @@ export const CitationImpactModal = (props: Props) => {
         {/* ── Header ── */}
         <div class="cim-header">
           <div class="cim-header-left">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="3" y="12" width="4" height="9" />
-              <rect x="10" y="7" width="4" height="14" />
-              <rect x="17" y="3" width="4" height="18" />
-            </svg>
+            <ChartIcon size={14} />
             <span class="cim-title">Citation Timeline</span>
           </div>
           <button class="cim-close" onClick={props.onClose} aria-label="Close">
@@ -426,18 +416,7 @@ export const CitationImpactModal = (props: Props) => {
           when={tl().length > 0}
           fallback={
             <div class="cim-empty">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+              <AlertCircleIcon size={22} />
               No citation data available yet for this paper.
             </div>
           }

@@ -15,7 +15,7 @@ async function fetchAllDois() {
   const dois = Array.isArray(data) ? data : data.dois;
   if (!Array.isArray(dois)) {
     throw new Error(
-      "Unexpected API response format — expected an array of DOIs",
+      "Unexpected API response format: expected an array of DOIs",
     );
   }
   return dois;
@@ -71,5 +71,5 @@ async function main() {
 main().catch((err) => {
   console.error("Sitemap generation failed:", err.message);
   console.error("Deploying without sitemap");
-  process.exit(0); // Don't fail the build — sitemap is non-critical
+  process.exit(0); // Don't fail the build; sitemap is non-critical
 });

@@ -1,3 +1,4 @@
+import { ChevronRightIcon, NoResultsIcon } from "./components/icons";
 import {
   createSignal,
   createEffect,
@@ -222,7 +223,7 @@ function App() {
 
     for (const [doi, el] of Object.entries(paperRefs)) {
       // Ref callbacks fire before <For> removes old nodes, so paperRefs can
-      // still hold detached elements — prune them and only observe live ones.
+      // still hold detached elements; prune them and only observe live ones.
       if (!el || !el.isConnected) {
         delete paperRefs[doi];
         continue;
@@ -257,7 +258,7 @@ function App() {
     scrollClickTimer = window.setTimeout(() => {
       isScrollingFromClick = false;
       // If the user hijacked the click-scroll (wheel/touch), the observer's
-      // visibilityMap moved on while pickActive() was suppressed — reconcile
+      // visibilityMap moved on while pickActive() was suppressed, so reconcile
       // the selection now. For an uninterrupted click-scroll we must NOT, or a
       // target clamped near the list end (never reaching the panel top) would
       // wrongly override the clicked selection.
@@ -336,6 +337,7 @@ function App() {
       setResults({});
       setSelectedDoi(null);
       setHasSearched(false);
+      ignoreNextReset = true;
     } else {
       debouncedDoiSearch(newTags);
     }
@@ -653,7 +655,7 @@ function App() {
           });
       }
     } else {
-      // URL has no search params — reset to welcome state
+      // URL has no search params, so reset to the welcome state
       if (ignoreNextReset) {
         ignoreNextReset = false;
       } else {
@@ -663,6 +665,10 @@ function App() {
         setResults({});
         setSelectedDoi(null);
         setHasSearched(false);
+        // Reached only by real navigation to a param-less URL (back button,
+        // brand logo). In-app clears set ignoreNextReset and keep the topbar
+        // search; this path should land on the full welcome screen instead.
+        setHasEverSearched(false);
       }
     }
   });
@@ -815,7 +821,16 @@ function App() {
                         }
                       >
                         <div class="no-results-pane">
-                          <div class="welcome-examples">
+                          <div class="no-results-title">
+                            Search the atlas
+                          </div>
+                          <div class="no-results-sub">
+                            Enter a title, author, or DOI in the bar above.
+                          </div>
+                          <div
+                            class="welcome-examples"
+                            style="margin-top: 1.5rem; justify-content: center"
+                          >
                             <div class="welcome-examples-label">
                               Example searches
                             </div>
@@ -825,16 +840,7 @@ function App() {
                                 onClick={() => handleExampleClick(ex.query)}
                               >
                                 <span>{ex.label}</span>
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  stroke-width="2"
-                                >
-                                  <polyline points="9,18 15,12 9,6" />
-                                </svg>
+                                <ChevronRightIcon size={14} />
                               </div>
                             ))}
                           </div>
@@ -844,18 +850,7 @@ function App() {
                   >
                     <div class="no-results-pane">
                       <div class="no-results-icon">
-                        <svg
-                          width="32"
-                          height="32"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                        >
-                          <circle cx="11" cy="11" r="8" />
-                          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                          <line x1="8" y1="11" x2="14" y2="11" />
-                        </svg>
+                        <NoResultsIcon size={32} />
                       </div>
                       <div class="no-results-title">No results found</div>
                       <div class="no-results-sub">
@@ -869,16 +864,7 @@ function App() {
                             onClick={() => handleExampleClick(ex.query)}
                           >
                             <span>{ex.label}</span>
-                            <svg
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                            >
-                              <polyline points="9,18 15,12 9,6" />
-                            </svg>
+                            <ChevronRightIcon size={14} />
                           </div>
                         ))}
                       </div>
@@ -886,9 +872,21 @@ function App() {
                   </Show>
                 }
               >
-                <div class="loading-pane">
-                  <div class="loading-spinner loading-spinner--lg" />
-                  <span class="loading-pane-text">Searching…</span>
+                <div class="dv-skel" aria-busy="true" aria-label="Searching">
+                  <div class="dv-skel-head" style={{ width: "72%" }} />
+                  <div class="sli-skel-line" style={{ width: "46%" }} />
+                  <div class="sli-skel-line" style={{ width: "31%" }} />
+                  <div class="sli-skel-line" style={{ width: "38%" }} />
+                  <div class="dv-skel-actions">
+                    <For each={[0, 1, 2, 3, 4]}>
+                      {(i) => (
+                        <div
+                          class="dv-skel-btn"
+                          style={{ width: `${5.5 + (i % 3) * 1.4}rem` }}
+                        />
+                      )}
+                    </For>
+                  </div>
                 </div>
               </Show>
             }

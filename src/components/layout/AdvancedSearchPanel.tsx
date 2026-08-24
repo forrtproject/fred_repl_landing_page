@@ -1,3 +1,4 @@
+import { CheckIcon, CloseIcon } from "../icons";
 import { createSignal, For, Show, createMemo, onCleanup, onMount } from "solid-js";
 import type { JSX } from "solid-js";
 import { createFocusTrap } from "../../utils/modalA11y";
@@ -284,7 +285,7 @@ const QuerySummary = (props: {
         <>
           {parts.length > 0 ? ", " : ""}published{" "}
           <strong>
-            {props.yearFrom}–{props.yearTo}
+            {props.yearFrom}-{props.yearTo}
           </strong>
         </>,
       );
@@ -405,9 +406,7 @@ export const AdvancedSearchPanel = (props: Props) => {
               onClick={props.onClose}
               title="Close"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
+              <CloseIcon size={16} />
             </button>
           </div>
 
@@ -451,13 +450,13 @@ export const AdvancedSearchPanel = (props: Props) => {
                   <div class="adv-help-wildcards-title">Pattern matching</div>
                   <div class="adv-help-wildcards-grid">
                     <code>experiment</code>
-                    <span>Exact word — <em>experiment</em> only</span>
+                    <span>Exact word: <em>experiment</em> only</span>
                     <code>experiment?</code>
-                    <span>One extra letter — <em>experiment</em> or <em>experiments</em></span>
+                    <span>One extra letter: <em>experiment</em> or <em>experiments</em></span>
                     <code>experiment*</code>
-                    <span>Starts with — <em>experimental</em>, <em>experimenting</em>…</span>
+                    <span>Starts with: <em>experimental</em>, <em>experimenting</em>…</span>
                     <code>*experiment*</code>
-                    <span>Contains — <em>quasi-experimental</em>, <em>non-experimental</em>…</span>
+                    <span>Contains: <em>quasi-experimental</em>, <em>non-experimental</em>…</span>
                   </div>
                 </div>
                 <p class="adv-help-hint">Press <kbd>Enter</kbd> or <kbd>,</kbd> to add a keyword.</p>
@@ -475,9 +474,7 @@ export const AdvancedSearchPanel = (props: Props) => {
                 label="Has all of these"
                 subLabel="every word"
                 icon={
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                  <CheckIcon size={11} />
                 }
               />
               <BucketInput
@@ -499,9 +496,7 @@ export const AdvancedSearchPanel = (props: Props) => {
                 label="Excludes these"
                 subLabel="none of"
                 icon={
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
+                  <CloseIcon size={11} />
                 }
               />
             </div>

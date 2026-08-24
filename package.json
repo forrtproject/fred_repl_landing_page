@@ -14,10 +14,12 @@
     "copy-index2-only": "node scripts/copy-index2.js",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "fetch-fonts": "node scripts/fetch-fonts.mjs"
   },
   "dependencies": {
     "@solidjs/router": "^0.15.3",
+    "solid-icons": "^1.2.0",
     "solid-js": "^1.9.9"
   },
   "devDependencies": {
@@ -25,7 +27,6 @@
     "@tailwindcss/vite": "^4.1.15",
     "@types/node": "^24.6.0",
     "baseline-browser-mapping": "^2.10.14",
-    "daisyui": "^5.3.7",
     "gh-pages": "^6.3.0",
     "tailwindcss": "^4.1.15",
     "typescript": "~5.9.3",

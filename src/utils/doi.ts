@@ -38,7 +38,7 @@ export function parseDoiPaste(raw: string): DoiPasteResult {
       : { kind: "multi", dois: tokens };
   }
 
-  // Single unrecognised token — reject if it looks like a bad link, otherwise
+  // Single unrecognised token: reject if it looks like a bad link, otherwise
   // let the default paste behavior run (could be a keyword, title, etc.).
   if (tokens.length === 1) {
     const [sole] = tokens;
@@ -46,13 +46,13 @@ export function parseDoiPaste(raw: string): DoiPasteResult {
       return {
         kind: "reject",
         reason:
-          "The link you pasted is not a DOI link. Please check what you have pasted — only DOIs (e.g. 10.1000/xyz) or doi.org links (e.g. https://doi.org/10.1000/xyz) are supported.",
+          "The link you pasted is not a DOI link. Please check what you have pasted. Only DOIs (e.g. 10.1000/xyz) or doi.org links (e.g. https://doi.org/10.1000/xyz) are supported.",
       };
     }
     return { kind: "none" };
   }
 
-  // Multiple tokens, some invalid — check if any invalid ones are bad links.
+  // Multiple tokens, some invalid: check if any invalid ones are bad links.
   const hasInvalidLink = tokens.some(
     (t) => !t.startsWith("10.") && /^https?:\/\//i.test(t),
   );
@@ -60,7 +60,7 @@ export function parseDoiPaste(raw: string): DoiPasteResult {
     return {
       kind: "reject",
       reason:
-        "Some links you pasted are not DOI links. Please check what you have pasted — only doi.org links (e.g. https://doi.org/10.1000/xyz) are supported.",
+        "Some links you pasted are not DOI links. Please check what you have pasted. Only doi.org links (e.g. https://doi.org/10.1000/xyz) are supported.",
     };
   }
 

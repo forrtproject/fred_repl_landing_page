@@ -2,7 +2,7 @@ import { stripDoiUrl } from "./doi";
 
 // For general reference text (paste / RIS / BIB): stop at < to avoid XML tags
 // from embedded metadata. A slash is only treated as part of the suffix when
-// the next segment contains digits/underscores/brackets — pure [A-Za-z-]
+// the next segment contains digits/underscores/brackets; pure [A-Za-z-]
 // segments are journal routing words.
 const TEXT_SUFFIX = `[^\\s,/<>\\]'"#?&\\\\]`;
 const TEXT_EXTRA_SLASH = `(?:\\/(?![a-zA-Z-]+(?:[/\\s,#?&<>{}\\[\\]]|$))${TEXT_SUFFIX}+)*`;

@@ -1,3 +1,4 @@
+import { PrintIcon as Print } from "../icons";
 import { createEffect, createMemo, createSignal, For, on, Show } from "solid-js";
 import type { OriginalPaper, FormattedDOIResult } from "../../@types";
 import { formatReplicationResponse } from "../../api/formatter";
@@ -37,18 +38,7 @@ const resolveOverallStatus = (rep: FormattedDOIResult): OutcomeStatus => {
 };
 
 const PrintIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-  >
-    <path d="M6 9V2h12v7" />
-    <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
-    <rect x="6" y="14" width="12" height="8" />
-  </svg>
+  <Print size={12} />
 );
 
 export const StudyListPanel = (props: StudyListPanelProps) => {
@@ -190,7 +180,7 @@ export const StudyListPanel = (props: StudyListPanelProps) => {
     if (totRepl > 0) summaryParts.push(`${totRepl} replication`);
 
     const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>FLoRA Replication Atlas Export — ${esc(filterLabel)}</title>
+<html><head><meta charset="utf-8"><title>FLoRA Replication Atlas Export: ${esc(filterLabel)}</title>
 <style>
 @page { margin: 1.5cm; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -237,7 +227,7 @@ footer { margin-top: 2rem; padding-top: 0.6rem; border-top: 1px solid #ddd; font
 </style></head>
 <body>
   <header>
-    <h1>FLoRA Replication Atlas &mdash; ${esc(filterLabel)}</h1>
+    <h1>FLoRA Replication Atlas: ${esc(filterLabel)}</h1>
     <div class="sub">${summaryParts.join(" <span>&middot;</span> ")} <span>&middot;</span> ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</div>
   </header>
   <div class="legend">
@@ -336,9 +326,25 @@ footer { margin-top: 2rem; padding-top: 0.6rem; border-top: 1px solid #ddd; font
 
       <div class="study-list" ref={listRef}>
         <Show when={props.isLoading}>
-          <div class="loading-panel">
-            <div class="loading-spinner" />
-            <span>Searching…</span>
+          <div class="sli-skel-list" aria-busy="true" aria-label="Searching">
+            <For each={[0, 1, 2, 3, 4]}>
+              {(i) => (
+                <div class="sli-skel">
+                  <div class="sli-skel-dot" />
+                  <div class="sli-skel-body">
+                    <div class="sli-skel-line" style={{ width: "94%" }} />
+                    <div class="sli-skel-line" style={{ width: `${68 - i * 6}%` }} />
+                    <div class="sli-skel-line" style={{ width: "52%" }} />
+                    <div class="sli-skel-pills">
+                      <div class="sli-skel-pill" />
+                      <Show when={i % 2 === 0}>
+                        <div class="sli-skel-pill" style={{ width: "2.4rem" }} />
+                      </Show>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </For>
           </div>
         </Show>
 

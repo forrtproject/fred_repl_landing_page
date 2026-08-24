@@ -26,11 +26,11 @@ export function smoothScrollIntoView(
   const { block = "start", residualPx, residualViewports = 1 } = opts;
 
   // Detached nodes report zeroed rects, which would scroll the container to a
-  // bogus position. Bail out — a re-render will have replaced this element.
+  // bogus position. Bail out; a re-render will have replaced this element.
   if (!target.isConnected) return;
 
   // Mobile/tablet layouts make the panels `overflow: visible` and scroll the
-  // page instead — the passed container isn't the scroller, so defer to the
+  // page instead: the passed container isn't the scroller, so defer to the
   // native behaviour.
   if (container.scrollHeight <= container.clientHeight) {
     target.scrollIntoView({ behavior: "smooth", block });
@@ -49,7 +49,7 @@ export function smoothScrollIntoView(
     const viewBottom = currentScroll + container.clientHeight;
     const targetBottom = targetTop + target.offsetHeight;
     if (targetTop >= viewTop && targetBottom <= viewBottom) {
-      // Already fully visible — don't scroll. This also throttles the rapid
+      // Already fully visible, so don't scroll. This also throttles the rapid
       // selection changes during a fast right-panel drag from each launching
       // a new animation.
       return;

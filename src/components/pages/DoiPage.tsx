@@ -1,3 +1,4 @@
+import { SpinnerIcon } from "../icons";
 import { createSignal, Show, onMount, onCleanup } from "solid-js";
 import { useParams, useNavigate } from "@solidjs/router";
 import type { DOIResults, OriginalPaper } from "../../@types";
@@ -20,7 +21,7 @@ export const DoiPage = () => {
   // SEO: update document title and meta tags
   const updateMeta = (paper: OriginalPaper | null) => {
     if (paper?.title) {
-      document.title = `${paper.title} — ${appName}`;
+      document.title = `${paper.title} | ${appName}`;
 
       const setMetaTag = (name: string, content: string, attr = "name") => {
         let el = document.querySelector(
@@ -206,7 +207,7 @@ export const DoiPage = () => {
             : undefined,
       });
     } else {
-      document.title = `${doi()} — ${appName}`;
+      document.title = `${doi()} | ${appName}`;
     }
   };
 
@@ -302,17 +303,7 @@ export const DoiPage = () => {
           fallback={
             <div class="welcome-state">
               <div class="welcome-icon">
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#853953"
-                  stroke-width="1.5"
-                  class="spin"
-                >
-                  <path d="M12 2a10 10 0 1 0 10 10" />
-                </svg>
+                <SpinnerIcon size={28} class="spin" color="#853953" />
               </div>
               <h2>Loading replication data...</h2>
               <p>{doi()}</p>

@@ -1,3 +1,4 @@
+import { CloseIcon, FileIcon, FilterIcon, MenuIcon, SearchIcon } from "../icons";
 import { createSignal, For, Show } from "solid-js";
 import { A } from "@solidjs/router";
 import forrt from "../../assets/FORRT.svg";
@@ -100,13 +101,7 @@ export const TopBar = (props: TopBarProps) => {
     const yearChanged = state.yearFrom !== MIN_YEAR || state.yearTo !== MAX_YEAR;
     return (
       <>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;opacity:0.5">
-          <line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/>
-          <line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/>
-          <line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/>
-          <line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/>
-          <line x1="16" y1="18" x2="16" y2="22"/>
-        </svg>
+        <FilterIcon size={14} />
         <span class="topbar-adv-badge">Advanced</span>
         <div class="topbar-adv-chips">
           <For each={state.mustAll}>
@@ -132,7 +127,7 @@ export const TopBar = (props: TopBarProps) => {
           </For>
           <Show when={yearChanged}>
             <span class="topbar-adv-chip topbar-adv-chip--gray">
-              {state.yearFrom}–{state.yearTo}
+              {state.yearFrom}-{state.yearTo}
             </span>
           </Show>
           <For each={state.outcomes}>
@@ -149,9 +144,7 @@ export const TopBar = (props: TopBarProps) => {
           onMouseDown={(e) => e.preventDefault()}
           onClick={(e) => { e.stopPropagation(); props.onSearchModeChange("fuzzy"); }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
+          <CloseIcon size={12} />
         </button>
       </>
     );
@@ -159,17 +152,7 @@ export const TopBar = (props: TopBarProps) => {
 
   const searchBar = (ref: (el: HTMLInputElement) => void) => (
     <>
-      <svg
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="M21 21l-4.3-4.3" />
-      </svg>
+      <SearchIcon size={15} />
       <div class="search-mode-toggle">
         <button
           classList={{ active: props.searchMode === "doi" }}
@@ -281,17 +264,7 @@ export const TopBar = (props: TopBarProps) => {
                 title={props.searchMode === "advanced" ? "Edit filters" : "Advanced search"}
                 type="button"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="21" y1="4" x2="14" y2="4"/>
-                  <line x1="10" y1="4" x2="3" y2="4"/>
-                  <line x1="21" y1="12" x2="12" y2="12"/>
-                  <line x1="8" y1="12" x2="3" y2="12"/>
-                  <line x1="21" y1="20" x2="16" y2="20"/>
-                  <line x1="12" y1="20" x2="3" y2="20"/>
-                  <line x1="14" y1="2" x2="14" y2="6"/>
-                  <line x1="8" y1="10" x2="8" y2="14"/>
-                  <line x1="16" y1="18" x2="16" y2="22"/>
-                </svg>
+                <FilterIcon size={14} />
                 {props.searchMode === "advanced" ? "Edit filters" : "Advanced search"}
               </button>
             </Show>
@@ -303,13 +276,7 @@ export const TopBar = (props: TopBarProps) => {
                 title="Import references from text or file"
                 type="button"
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="8" y1="13" x2="16" y2="13" />
-                  <line x1="8" y1="17" x2="16" y2="17" />
-                  <polyline points="10 9 9 9 8 9" />
-                </svg>
+                <FileIcon size={13} />
                 Import refs
               </button>
             </Show>
@@ -347,41 +314,18 @@ export const TopBar = (props: TopBarProps) => {
           aria-label="Toggle navigation menu"
           aria-expanded={menuOpen()}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            {menuOpen() ? (
-              <path d="M18 6L6 18M6 6l12 12" />
-            ) : (
-              <>
-                <path d="M3 7h18" />
-                <path d="M3 12h18" />
-                <path d="M3 17h18" />
-              </>
-            )}
-          </svg>
+          {menuOpen() ? <CloseIcon size={20} /> : <MenuIcon size={20} />}
         </button>
       </nav>
 
-      {/* Mobile search row — always visible on small screens */}
+      {/* Mobile search row: always visible on small screens */}
       <Show when={props.showSearch !== false}>
         <div class="topbar-mobile-search">
           <Show
             when={props.searchMode !== "advanced"}
             fallback={
               <div class="mob-adv-active-row">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0">
-                  <line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/>
-                  <line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/>
-                  <line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/>
-                  <line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/>
-                  <line x1="16" y1="18" x2="16" y2="22"/>
-                </svg>
+                <FilterIcon size={13} />
                 <div class="mob-adv-active-chips">
                   <For each={props.advancedState?.mustAll ?? []}>
                     {(t) => <span class="topbar-adv-chip topbar-adv-chip--green"><span class="topbar-adv-chip-pre">all</span>{t}</span>}
@@ -393,7 +337,7 @@ export const TopBar = (props: TopBarProps) => {
                     {(t) => <span class="topbar-adv-chip topbar-adv-chip--red"><span class="topbar-adv-chip-pre">not</span>{t}</span>}
                   </For>
                   <Show when={props.advancedState && (props.advancedState.yearFrom !== MIN_YEAR || props.advancedState.yearTo !== MAX_YEAR)}>
-                    <span class="topbar-adv-chip topbar-adv-chip--gray">{props.advancedState!.yearFrom}–{props.advancedState!.yearTo}</span>
+                    <span class="topbar-adv-chip topbar-adv-chip--gray">{props.advancedState!.yearFrom}-{props.advancedState!.yearTo}</span>
                   </Show>
                   <For each={props.advancedState?.outcomes ?? []}>
                     {(o) => <span class="topbar-adv-chip topbar-adv-chip--primary">{o}</span>}
@@ -404,9 +348,7 @@ export const TopBar = (props: TopBarProps) => {
                 </div>
                 <button class="mob-adv-edit-btn" type="button" onClick={() => props.onAdvancedClick?.()}>Edit</button>
                 <button class="mob-adv-active-clear" type="button" title="Clear" onClick={() => props.onSearchModeChange("fuzzy")}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <path d="M18 6L6 18M6 6l12 12" />
-                  </svg>
+                  <CloseIcon size={12} />
                 </button>
               </div>
             }
@@ -426,18 +368,7 @@ export const TopBar = (props: TopBarProps) => {
               </button>
             </div>
             <div class="mob-search-row" onClick={() => mobileInputRef?.focus()}>
-              <svg
-                class="mob-search-icon"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.3-4.3" />
-              </svg>
+              <SearchIcon size={16} class="mob-search-icon" />
               <div class="mob-search-input-wrap">
                 {props.searchMode === "doi" && (
                   <For each={props.tags}>
@@ -481,17 +412,7 @@ export const TopBar = (props: TopBarProps) => {
                   fireSearch(value || undefined);
                 }}
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="M21 21l-4.3-4.3" />
-                </svg>
+                <SearchIcon size={16} />
               </button>
               <Show when={!!props.onAdvancedClick}>
                 <button
@@ -500,13 +421,7 @@ export const TopBar = (props: TopBarProps) => {
                   onClick={(e) => { e.stopPropagation(); props.onAdvancedClick!(); }}
                   title="Advanced search"
                 >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/>
-                    <line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/>
-                    <line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/>
-                    <line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/>
-                    <line x1="16" y1="18" x2="16" y2="22"/>
-                  </svg>
+                  <FilterIcon size={15} />
                 </button>
               </Show>
             </div>
@@ -551,7 +466,7 @@ export const TopBar = (props: TopBarProps) => {
         variant="warning"
         hint={
           <>
-            Try separating DOIs with a comma, semicolon, or newline — e.g.
+            Try separating DOIs with a comma, semicolon, or newline. For example:
             {" "}
             <code>10.1371/journal.pone.0335330, 10.1075/target.18159.ola</code>
           </>
