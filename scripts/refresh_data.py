@@ -617,6 +617,13 @@ def write_to_dynamodb(studies: dict, aggregate: dict, meta: dict) -> None:
             rec = json.loads(raw)
         except Exception:
             rec = {}
+        # The API reads citation_timeline/n_citations from the top level of this
+        # blob and falls back to the nested copies inside `record`, where an
+        # older ETL left a replications-per-year map under the same name.
+        inner = rec.get("record")
+        if isinstance(inner, dict):
+            inner.pop("citation_timeline", None)
+            inner.pop("n_citations", None)
         rec["n_citations"] = s["n_citations"]
         rec["citation_timeline"] = {
             "last_updated": meta["last_updated"],

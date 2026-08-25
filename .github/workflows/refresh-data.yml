@@ -17,16 +17,28 @@ jobs:
         with:
           python-version: "3.12"
 
+      # Key is unique per run so each run saves its own entry; restore-keys pulls
+      # the newest previous one. Keeping the script's hash out of the key means
+      # editing the pipeline no longer throws away the crawl.
       - name: Restore OpenCitations cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: cache/
-          key: oc-cache-${{ runner.os }}-${{ hashFiles('scripts/refresh_data.py') }}
+          key: oc-cache-${{ runner.os }}-${{ github.run_id }}
           restore-keys: |
             oc-cache-${{ runner.os }}-
 
       - name: Install dependencies
         run: pip install boto3 numpy pandas requests statsmodels tqdm
+
+      - name: Check required configuration
+        env:
+          DATA_TABLE: ${{ vars.DATA_TABLE }}
+        run: |
+          if [ -z "$DATA_TABLE" ]; then
+            echo "::error::DATA_TABLE repository variable is not set — it must name the backend's DOI table (flora-backend-<stage>-doi)."
+            exit 1
+          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -43,3 +55,12 @@ jobs:
           MY_EMAIL: ${{ secrets.MY_EMAIL }}
           MAX_RUNTIME_SECONDS: "18000"
         run: python scripts/refresh_data.py
+
+      # The run is time-budgeted and resumable, so a cancelled or failed job
+      # still has crawl progress worth keeping.
+      - name: Save OpenCitations cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: cache/
+          key: oc-cache-${{ runner.os }}-${{ github.run_id }}

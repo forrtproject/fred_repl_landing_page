@@ -1,5 +1,9 @@
 import { createEffect, createMemo, Show, For, onCleanup } from "solid-js";
-import type { OriginalPaper, CitationTimelineEntry } from "../../@types";
+import type {
+  OriginalPaper,
+  CitationTimeline,
+  CitationTimelineEntry,
+} from "../../@types";
 import { createFocusTrap } from "../../utils/modalA11y";
 
 type Props = {
@@ -37,18 +41,64 @@ function niceTicks(max: number, count = 5): number[] {
   return ticks;
 }
 
+const EMPTY_ENTRY = (year: number): CitationTimelineEntry => ({
+  year,
+  only: 0,
+  with_successful: 0,
+  with_failed: 0,
+  with_mixed: 0,
+});
+
+const MAX_SPAN_YEARS = 150;
+
+/**
+ * Citation entries only exist for years that had citations, so plotting them
+ * as-is puts unequal year gaps at equal spacing and lands the replication
+ * markers on the wrong bars. Fill the gaps, and widen the domain to cover the
+ * replication years so their markers stay inside the plot area.
+ */
+function buildSeries(
+  entries: CitationTimelineEntry[],
+  repYears: number[],
+): CitationTimelineEntry[] {
+  const clean = entries
+    .filter((d) => Number.isFinite(d?.year))
+    .map((d) => ({
+      year: d.year,
+      only: d.only ?? 0,
+      with_successful: d.with_successful ?? 0,
+      with_failed: d.with_failed ?? 0,
+      with_mixed: d.with_mixed ?? 0,
+    }))
+    .sort((a, b) => a.year - b.year);
+  if (clean.length === 0) return [];
+
+  const byYear = new Map(clean.map((d) => [d.year, d]));
+  let lo = clean[0]!.year;
+  let hi = clean[clean.length - 1]!.year;
+  for (const y of repYears) {
+    if (y < lo && hi - y <= MAX_SPAN_YEARS) lo = y;
+    if (y > hi && y - lo <= MAX_SPAN_YEARS) hi = y;
+  }
+
+  const out: CitationTimelineEntry[] = [];
+  for (let y = lo; y <= hi; y++) out.push(byYear.get(y) ?? EMPTY_ENTRY(y));
+  return out;
+}
+
 function StackedBarChart(props: {
   data: CitationTimelineEntry[];
   reps: NonNullable<OriginalPaper["record"]>["replications"];
 }) {
   const ML = 52,
     MR = 72,
-    MT = 72,
     MB = 50;
   const VW = 720,
-    VH = 394;
+    CH = 272;
   const CW = VW - ML - MR;
-  const CH = VH - MT - MB;
+  // Marker labels stack above the plot, so the top margin has to grow with them.
+  const MT = () => Math.max(72, 28 + (maxLevel() + 1) * 22);
+  const VH = () => MT() + CH + MB;
 
   const totals = () =>
     props.data.map(
@@ -66,21 +116,13 @@ function StackedBarChart(props: {
   const minYear = () => props.data[0]?.year ?? 0;
   const maxYear = () => props.data[props.data.length - 1]?.year ?? 0;
 
-  const yearToX = (year: number): number => {
-    const exact = props.data.findIndex((d) => d.year === year);
-    if (exact >= 0) return barCentreX(exact);
-    const range = maxYear() - minYear();
-    if (range <= 0 || n() <= 1) return ML + CW / 2;
-    const yps = range / (n() - 1);
-    return year > maxYear()
-      ? barCentreX(n() - 1) + ((year - maxYear()) / yps) * slotW()
-      : barCentreX(0) - ((minYear() - year) / yps) * slotW();
-  };
+  // props.data is gap-filled, so one slot is exactly one year.
+  const yearToX = (year: number): number => barCentreX(year - minYear());
 
   const repLines = () => {
     const FS = 10;
     const lines = props.reps
-      .filter((r) => r.year != null)
+      .filter((r) => r.year != null && r.year >= minYear() && r.year <= maxYear())
       .map((r) => {
         const x = yearToX(r.year!);
         const outcome = r.outcome.split(",")[0]?.trim() ?? r.outcome;
@@ -124,25 +166,19 @@ function StackedBarChart(props: {
 
   const xLabels = () => {
     const every = n() > 50 ? 10 : n() > 25 ? 5 : n() > 12 ? 2 : 1;
-    const fromData = props.data
+    return props.data
       .map((d, i) => ({ year: d.year, x: barCentreX(i) }))
       .filter((_, i) => i % every === 0);
-    const repYears = props.reps
-      .map((r) => r.year)
-      .filter(
-        (y): y is number => y != null && (y < minYear() || y > maxYear()),
-      );
-    return {
-      fromData,
-      extra: repYears.map((y) => ({ year: y, x: yearToX(y) })),
-    };
   };
+
+  const maxLevel = () =>
+    repLines().reduce((m, l) => Math.max(m, l.level), 0);
 
   const muted = { "font-family": FONT, fill: "var(--text-muted)" } as const;
 
   return (
     <svg
-      viewBox={`0 0 ${VW} ${VH}`}
+      viewBox={`0 0 ${VW} ${VH()}`}
       style={{ width: "100%", height: "auto", display: "block" }}
       font-family={FONT}
       aria-label="Citation timeline"
@@ -150,7 +186,7 @@ function StackedBarChart(props: {
       {/* Chart area background */}
       <rect
         x={ML}
-        y={MT}
+        y={MT()}
         width={CW}
         height={CH}
         fill="var(--surface)"
@@ -161,7 +197,7 @@ function StackedBarChart(props: {
       {/* Grid lines */}
       <For each={ticks()}>
         {(t) => {
-          const y = MT + CH - scaleY(t);
+          const y = MT() + CH - scaleY(t);
           return (
             <>
               <line
@@ -209,7 +245,7 @@ function StackedBarChart(props: {
                 : l.key === "with_mixed"
                   ? COLORS.mixed
                   : COLORS.successful;
-            rects.push({ y: MT + CH - scaleY(cumY) - h, h, fill });
+            rects.push({ y: MT() + CH - scaleY(cumY) - h, h, fill });
             cumY += l.val;
           }
           const x = barX(i()),
@@ -237,14 +273,14 @@ function StackedBarChart(props: {
         {(line) => {
           const color = COLORS[line.outcome as keyof typeof COLORS] ?? "#853953";
           const chipBg = CHIP_BG[line.outcome] ?? "rgba(133,57,83,0.10)";
-          const labelY = MT - 12 - line.level * 22;
+          const labelY = MT() - 12 - line.level * 22;
           return (
             <>
               <line
                 x1={line.x}
                 x2={line.x}
-                y1={MT}
-                y2={MT + CH}
+                y1={MT()}
+                y2={MT() + CH}
                 stroke={color}
                 stroke-width="1.5"
                 stroke-dasharray="5 3"
@@ -280,26 +316,26 @@ function StackedBarChart(props: {
       <line
         x1={ML}
         x2={ML + CW}
-        y1={MT + CH}
-        y2={MT + CH}
+        y1={MT() + CH}
+        y2={MT() + CH}
         stroke="var(--border)"
         stroke-width="1"
       />
       <line
         x1={ML}
         x2={ML}
-        y1={MT}
-        y2={MT + CH}
+        y1={MT()}
+        y2={MT() + CH}
         stroke="var(--border)"
         stroke-width="1"
       />
 
       {/* X labels */}
-      <For each={xLabels().fromData}>
+      <For each={xLabels()}>
         {({ year, x }) => (
           <text
             x={x}
-            y={MT + CH + 18}
+            y={MT() + CH + 18}
             text-anchor="middle"
             font-size="11"
             {...muted}
@@ -308,24 +344,10 @@ function StackedBarChart(props: {
           </text>
         )}
       </For>
-      <For each={xLabels().extra}>
-        {({ year, x }) => (
-          <text
-            x={x}
-            y={MT + CH + 18}
-            text-anchor="middle"
-            font-size="11"
-            {...muted}
-          >
-            {year}
-          </text>
-        )}
-      </For>
-
       {/* Axis titles */}
       <text
         x={ML + CW / 2}
-        y={VH - 4}
+        y={VH() - 4}
         text-anchor="middle"
         font-size="12"
         {...muted}
@@ -333,7 +355,7 @@ function StackedBarChart(props: {
         Year
       </text>
       <text
-        transform={`translate(13,${MT + CH / 2}) rotate(-90)`}
+        transform={`translate(13,${MT() + CH / 2}) rotate(-90)`}
         text-anchor="middle"
         font-size="11"
         {...muted}
@@ -368,11 +390,25 @@ export const CitationImpactModal = (props: Props) => {
   // Mounted only while open, so the trap is always active for this instance.
   createFocusTrap(() => modalRef, () => true);
 
-  const tl = () => props.paper.citation_timeline?.entries ?? [];
+  // The API serves two things under `citation_timeline`: this OpenCitations
+  // payload, and a legacy {year: count} map of replications. Only the former
+  // has `entries`.
+  const timeline = () => {
+    const ct = props.paper.citation_timeline as CitationTimeline | undefined;
+    return Array.isArray(ct?.entries) ? ct : undefined;
+  };
   const reps = () => props.paper.record?.replications ?? [];
+  const tl = createMemo(() =>
+    buildSeries(
+      timeline()?.entries ?? [],
+      reps()
+        .map((r) => r.year)
+        .filter((y): y is number => y != null),
+    ),
+  );
 
   const formattedLastUpdated = createMemo(() => {
-    const raw = props.paper.citation_timeline?.last_updated;
+    const raw = timeline()?.last_updated;
     if (!raw) return null;
     try {
       return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(raw));

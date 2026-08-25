@@ -63,8 +63,10 @@ export type CitationTimelineEntry = {
   with_mixed: number;
 };
 
+// The API also serves a legacy `citation_timeline` seeded by an older ETL: a
+// {year: count} map of replications, not citations. Discriminate on `entries`.
 export type CitationTimeline = {
-  last_updated: string;
+  last_updated?: string;
   entries: CitationTimelineEntry[];
 };
 
@@ -83,8 +85,12 @@ export type OriginalPaper = {
   url: string | null;
   types?: string[];
   record: RecordData | null;
-  citation_timeline?: CitationTimeline;
+  citation_timeline?: CitationTimeline | Record<string, number>;
   n_citations?: number;
+  outcome_mix?: Record<string, number>;
+  replication_year_counts?: Record<string, number>;
+  first_replication_year?: string | null;
+  first_replication_outcome?: string | null;
 };
 
 export type DOIResults = {
