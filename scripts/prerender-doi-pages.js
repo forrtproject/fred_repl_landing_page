@@ -2,11 +2,19 @@ import { writeFile, readFile, mkdir } from "fs/promises";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { Resvg } from "@resvg/resvg-js";
+import {
+  SITE_URL,
+  buildDescription,
+  buildTitle,
+  cleanAuthorName,
+  cleanTitle,
+  outcomeCounts,
+} from "../src/seo/pageMeta.js";
+import { generateBrowsePages } from "./browse-pages.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = join(__dirname, "../dist");
 const API_BASE = "https://rep-api.forrt.org/v1";
-const SITE_URL = "https://forrt.org/flora-replication-atlas";
 const BATCH_SIZE = 100;
 const CONCURRENT_BATCHES = 5;
 
@@ -59,147 +67,245 @@ async function fetchAllPapers(dois) {
 }
 
 function formatAuthors(authors) {
-  if (!Array.isArray(authors) || !authors.length) return "unknown authors";
-  if (authors.length === 1) return authors[0].family;
-  if (authors.length === 2)
-    return `${authors[0].family} & ${authors[1].family}`;
-  return `${authors[0].family} et al.`;
+  const names = (Array.isArray(authors) ? authors : [])
+    .map((a) => cleanAuthorName(a?.family))
+    .filter(Boolean);
+  if (!names.length) return "unknown authors";
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} & ${names[1]}`;
+  return `${names[0]} et al.`;
 }
 
-function buildPageMeta(paper) {
+/** Sibling atlas page for a linked study, or null when it has none. */
+function atlasHref(doi, atlasDois) {
+  if (!doi || !atlasDois.has(doi)) return null;
+  return `${SITE_URL}/doi/${doi}/`;
+}
+
+function buildPageMeta(paper, atlasDois) {
   const doi = paper.doi;
-  const title = paper.title || doi;
+  const title = cleanTitle(paper.title) || doi;
   const authors = Array.isArray(paper.authors) ? paper.authors : [];
-  const authorNames = authors.map((a) => `${a.family}, ${a.given}`).join("; ");
-  const authorLastNames = authors.map((a) => a.family).filter(Boolean);
 
   const replications = paper.record?.replications || [];
   const reproductions = paper.record?.reproductions || [];
-  const stats = paper.record?.stats;
-  const nReplications = stats?.n_replications_total ?? 0;
-  const nReproductions = stats?.n_reproductions_total ?? 0;
 
-  const allOutcomes = [
-    ...replications.map((r) => r.outcome),
-    ...reproductions.map((r) => r.outcome),
-  ].filter(Boolean);
-  const uniqueOutcomes = [...new Set(allOutcomes)];
+  const pageTitle = buildTitle(paper);
+  const description = buildDescription(paper);
 
-  const replicationSentences = replications.map((r) => {
-    const by = formatAuthors(r.authors);
-    const outcome = r.outcome
-      ? `described as ${r.outcome}`
-      : "outcome not recorded";
-    return `"${title}" has been replicated by ${by} (${r.year}), ${outcome}.`;
-  });
+  const uniqueOutcomes = [
+    ...new Set(
+      [...replications, ...reproductions].map((r) => r.outcome).filter(Boolean),
+    ),
+  ];
 
-  const reproductionSentences = reproductions.map((r) => {
-    const by = formatAuthors(r.authors);
-    const outcome = r.outcome
-      ? `described as ${r.outcome}`
-      : "outcome not recorded";
-    return `"${title}" has been reproduced by ${by} (${r.year}), ${outcome}.`;
-  });
-
-  const replicationSummary =
-    replicationSentences.length > 0 || reproductionSentences.length > 0
-      ? [...replicationSentences, ...reproductionSentences].join(" ")
-      : "No replications or reproductions recorded yet.";
-
-  const description =
-    `"${title}" by ${authorNames} (${paper.year}${paper.journal ? `, ${paper.journal}` : ""}). ` +
-    `${replicationSummary} Indexed in the FLoRA Replication Atlas (FORRT FLoRA database). DOI: ${doi}`;
-
-  const titleKeywords = title
-    .split(/\s+/)
-    .filter((w) => w.length > 4)
-    .slice(0, 6)
-    .map((w) => w.replace(/[^a-zA-Z0-9]/g, ""))
-    .filter(Boolean);
-
+  // JSON-LD only; the `keywords` meta tag is gone.
   const keywords = [
-    ...authorLastNames,
+    ...authors.map((a) => cleanAuthorName(a.family)).filter(Boolean),
     paper.journal,
     String(paper.year),
     ...uniqueOutcomes.map((o) => `${o} replication`),
-    ...titleKeywords,
     "replication",
     "reproducibility",
     "open science",
-    "FLoRA",
-    "FReD",
-    "FORRT",
-    "replication crisis",
-    "has this study been replicated",
-  ]
-    .filter(Boolean)
-    .join(", ");
+  ].filter(Boolean);
 
   // Trailing slash is required: pages are written as doi/<doi>/index.html, and
   // GitHub Pages 301-redirects the slash-less URL to this one. Declaring the
   // slash-less form as canonical makes Google override it with the redirect target.
   const pageUrl = `${SITE_URL}/doi/${doi}/`;
 
-  const jsonLd = JSON.stringify({
-    "@context": "https://schema.org",
+  const attempt = (r, kind) => {
+    const href = atlasHref(r.doi, atlasDois);
+    return {
+      "@type": "ScholarlyArticle",
+      name: cleanTitle(r.title) || r.doi,
+      // A bare string here is not a type; schema.org wants a resolvable URI.
+      additionalType: `https://forrt.org/flora-replication-atlas/#${kind}`,
+      ...(href && { url: href, mainEntityOfPage: href }),
+      ...(r.outcome && { description: `Outcome: ${r.outcome}` }),
+      ...(r.year && { datePublished: String(r.year) }),
+      ...(r.doi && {
+        identifier: {
+          "@type": "PropertyValue",
+          propertyID: "DOI",
+          value: r.doi,
+        },
+        sameAs: `https://doi.org/${r.doi}`,
+      }),
+    };
+  };
+
+  const subjectOf = [
+    ...replications.map((r) => attempt(r, "ReplicationStudy")),
+    ...reproductions.map((r) => attempt(r, "ReproductionStudy")),
+  ];
+
+  const article = {
     "@type": "ScholarlyArticle",
+    "@id": `${pageUrl}#article`,
+    mainEntityOfPage: pageUrl,
     name: title,
-    author: authors.map((a) => ({
-      "@type": "Person",
-      givenName: a.given,
-      familyName: a.family,
-    })),
+    headline: title,
+    author: authors
+      .map((a) => ({
+        "@type": "Person",
+        givenName: cleanAuthorName(a.given) || undefined,
+        familyName: cleanAuthorName(a.family) || undefined,
+        name: cleanAuthorName([a.given, a.family].filter(Boolean).join(" ")),
+      }))
+      .filter((a) => a.name),
     datePublished: String(paper.year),
     isPartOf: paper.journal
       ? { "@type": "Periodical", name: paper.journal }
       : undefined,
     identifier: { "@type": "PropertyValue", propertyID: "DOI", value: doi },
-    url: `https://doi.org/${doi}`,
+    url: pageUrl,
+    sameAs: `https://doi.org/${doi}`,
     description,
     keywords,
-    subjectOf:
-      nReplications > 0 || nReproductions > 0
-        ? [
-            ...replications.map((r) => ({
-              "@type": "ScholarlyArticle",
-              name: r.title,
-              additionalType: "ReplicationStudy",
-              ...(r.outcome && { description: `Outcome: ${r.outcome}` }),
-              ...(r.doi && {
-                identifier: {
-                  "@type": "PropertyValue",
-                  propertyID: "DOI",
-                  value: r.doi,
-                },
-              }),
-            })),
-            ...reproductions.map((r) => ({
-              "@type": "ScholarlyArticle",
-              name: r.title,
-              additionalType: "ReproductionStudy",
-              ...(r.outcome && { description: `Outcome: ${r.outcome}` }),
-              ...(r.doi && {
-                identifier: {
-                  "@type": "PropertyValue",
-                  propertyID: "DOI",
-                  value: r.doi,
-                },
-              }),
-            })),
-          ]
-        : undefined,
+    isBasedOn: { "@id": `${SITE_URL}/#dataset` },
+    subjectOf: subjectOf.length > 0 ? subjectOf : undefined,
+  };
+
+  const breadcrumb = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "FLoRA Replication Atlas",
+        item: `${SITE_URL}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Studies",
+        item: `${SITE_URL}/browse/`,
+      },
+      { "@type": "ListItem", position: 3, name: title, item: pageUrl },
+    ],
+  };
+
+  const jsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@graph": [article, breadcrumb],
   });
 
-  const ogImageUrl = `${SITE_URL}/doi/${doi}/og.png`;
   return {
-    title: `${title} — FLoRA Replication Atlas`,
+    title: pageTitle,
     description,
-    keywords,
     pageUrl,
     jsonLd,
     authors,
-    ogImageUrl,
+    ogImageUrl: `${SITE_URL}/doi/${doi}/og.png`,
   };
+}
+
+function attemptLine(entry, atlasDois) {
+  const href = atlasHref(entry.doi, atlasDois);
+  const name = escHtml(cleanTitle(entry.title) || entry.doi || "Untitled attempt");
+  const label = href ? `<a href="${href}">${name}</a>` : name;
+  const by = escHtml(formatAuthors(entry.authors));
+  const year = entry.year ? ` (${escHtml(entry.year)})` : "";
+  const outcome = entry.outcome
+    ? ` Outcome recorded: ${escHtml(entry.outcome)}.`
+    : " No outcome recorded.";
+  const quote = entry.outcome_quote
+    ? ` <q>${escHtml(String(entry.outcome_quote).split("||")[0].trim().slice(0, 300))}</q>`
+    : "";
+  const paper = entry.doi
+    ? ` <a href="https://doi.org/${escHtml(entry.doi)}">View paper</a>`
+    : "";
+  return `<li><strong>${label}</strong>, ${by}${year}.${outcome}${quote}${paper}</li>`;
+}
+
+// Links each page on to the next few, so they form a crawlable ring.
+const RELATED_COUNT = 6;
+function relatedLinks(dois, index, papers) {
+  const out = [];
+  for (let k = 1; k <= RELATED_COUNT && k < dois.length; k++) {
+    const other = dois[(index + k) % dois.length];
+    const label = cleanTitle(papers[other]?.title) || other;
+    out.push(
+      `<li><a href="${SITE_URL}/doi/${escHtml(other)}/">${escHtml(label.length > 90 ? label.slice(0, 89) + "\u2026" : label)}</a></li>`,
+    );
+  }
+  return out.join("\n        ");
+}
+
+/** The crawlable copy of the record, for crawlers that never run the app. */
+function renderBody(paper, dois, index, papers, atlasDois) {
+  const doi = paper.doi;
+  const title = cleanTitle(paper.title) || doi;
+  const authors = Array.isArray(paper.authors) ? paper.authors : [];
+  const authorNames = authors
+    .map((a) => cleanAuthorName([a.given, a.family].filter(Boolean).join(" ")))
+    .filter(Boolean)
+    .join(", ");
+  const replications = paper.record?.replications || [];
+  const reproductions = paper.record?.reproductions || [];
+
+  const venue = [paper.journal, paper.year]
+    .filter(Boolean)
+    .map((x) => escHtml(String(x)))
+    .join(", ");
+
+  const parts = [];
+  if (replications.length > 0)
+    parts.push(
+      `${replications.length} ${replications.length === 1 ? "replication" : "replications"}`,
+    );
+  if (reproductions.length > 0)
+    parts.push(
+      `${reproductions.length} ${reproductions.length === 1 ? "reproduction" : "reproductions"}`,
+    );
+
+  const counts = outcomeCounts(paper);
+  const outcomeSentence =
+    counts.length > 0
+      ? ` Recorded outcomes: ${counts
+          .map(([b, n]) => `${n} ${b === "unrecorded" ? "with no outcome recorded" : b}`)
+          .join(", ")}.`
+      : "";
+  const summary =
+    parts.length > 0
+      ? `The atlas records ${parts.join(" and ")} of this study.${outcomeSentence}`
+      : "The atlas has no replication or reproduction of this study on record yet.";
+
+  const section = (heading, items) =>
+    items.length > 0
+      ? `<h3>${heading}</h3>
+        <ul>
+        ${items.map((r) => attemptLine(r, atlasDois)).join("\n        ")}
+        </ul>`
+      : "";
+
+  const noneNote =
+    parts.length === 0
+      ? `<p>An absent record is not evidence that the finding failed to replicate. It means no attempt has been indexed here yet. <a href="${SITE_URL}/">Search the atlas</a> for related work, or send in a replication we have missed.</p>`
+      : "";
+
+  return `<main class="ssg">
+        <p class="ssg-meta"><a href="${SITE_URL}/">FLoRA Replication Atlas</a> &rsaquo; <a href="${SITE_URL}/browse/">Browse</a></p>
+        <h1>${escHtml(title)}</h1>
+        ${authorNames ? `<p class="ssg-meta">${escHtml(authorNames)}</p>` : ""}
+        <p class="ssg-meta">${venue}${venue ? ". " : ""}DOI <a href="https://doi.org/${escHtml(doi)}">${escHtml(doi)}</a></p>
+
+        <h2>Has this study been replicated?</h2>
+        <p>${summary}</p>
+        ${section("Replications", replications)}
+        ${section("Reproductions", reproductions)}
+        ${noneNote}
+
+        <h2>Other studies in the atlas</h2>
+        <ul class="ssg-related">
+        ${relatedLinks(dois, index, papers)}
+        </ul>
+        <p><a href="${SITE_URL}/browse/outcome/failed/">Failed replications</a> &middot;
+        <a href="${SITE_URL}/browse/outcome/successful/">Successful replications</a> &middot;
+        <a href="${SITE_URL}/browse/">All browse pages</a></p>
+      </main>`;
 }
 
 function escSvg(str) {
@@ -368,8 +474,7 @@ async function generateOgImage(paper) {
 }
 
 function injectMeta(html, meta) {
-  const { title, description, keywords, pageUrl, jsonLd, authors, ogImageUrl } =
-    meta;
+  const { title, description, pageUrl, jsonLd, authors, ogImageUrl } = meta;
 
   html = html.replace(
     /<title>[^<]*<\/title>/,
@@ -385,11 +490,6 @@ function injectMeta(html, meta) {
     /(<meta name="description" content=")[^"]*(")/,
     `$1${escHtml(description)}$2`,
   );
-  html = html.replace(
-    /(<meta name="keywords" content=")[^"]*(")/,
-    `$1${escHtml(keywords)}$2`,
-  );
-
   html = html.replace(
     /(<meta property="og:title" content=")[^"]*(")/,
     `$1${escHtml(title)}$2`,
@@ -426,6 +526,14 @@ function injectMeta(html, meta) {
     `$1${escHtml(description)}$2`,
   );
 
+  // Swap the landing page's crawlable copy for this paper's own.
+  if (meta.body) {
+    html = html.replace(
+      /<!--ssg-start-->[\s\S]*?<!--ssg-end-->/,
+      `<!--ssg-start-->\n      ${meta.body}\n      <!--ssg-end-->`,
+    );
+  }
+
   // Replace the site-level JSON-LD with the per-article one
   html = html.replace(
     /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
@@ -450,7 +558,22 @@ async function main() {
   const baseHtml = await readFile(join(DIST_DIR, "index.html"), "utf-8");
 
   console.log("Fetching DOI list...");
-  const dois = await fetchAllDois();
+  let dois = await fetchAllDois();
+
+  // A source URL in the DOI field would become a nested directory here.
+  const malformed = dois.filter((d) => !/^10\./.test(d));
+  if (malformed.length) {
+    console.warn(
+      `  Skipping ${malformed.length} record(s) whose DOI field is not a DOI: ${malformed.slice(0, 5).join(", ")}`,
+    );
+    dois = dois.filter((d) => /^10\./.test(d));
+  }
+
+  // Local smoke-testing hook: PRERENDER_LIMIT=3 npm run prerender-doi-pages
+  if (process.env.PRERENDER_LIMIT) {
+    dois = dois.slice(0, Number(process.env.PRERENDER_LIMIT));
+    console.log(`PRERENDER_LIMIT set, building ${dois.length} pages only.`);
+  }
   console.log(
     `Found ${dois.length} DOIs. Fetching paper data in batches of ${BATCH_SIZE}...`,
   );
@@ -459,28 +582,41 @@ async function main() {
   const fetched = Object.keys(papers).length;
   console.log(`Got data for ${fetched}/${dois.length} DOIs. Writing pages...`);
 
+  // Only link on to a study that actually has a page here.
+  const atlasDois = new Set(dois);
+
   let withMeta = 0;
   let withoutMeta = 0;
 
-  for (const doi of dois) {
+  for (let i = 0; i < dois.length; i++) {
+    const doi = dois[i];
     const paper = papers[doi];
     const outDir = join(DIST_DIR, "doi", doi);
     await mkdir(outDir, { recursive: true });
 
     if (paper) {
       withMeta++;
-      const meta = buildPageMeta(paper);
+      const meta = buildPageMeta(paper, atlasDois);
+      meta.body = renderBody(paper, dois, i, papers, atlasDois);
       const html = injectMeta(baseHtml, meta);
       await writeFile(join(outDir, "index.html"), html, "utf-8");
-      try {
-        const png = await generateOgImage(paper);
-        await writeFile(join(outDir, "og.png"), png);
-      } catch (e) {
-        console.warn(`  OG image failed for ${doi}: ${e.message}`);
+      // The slow half of the build; skip it when only the HTML is under test.
+      if (!process.env.PRERENDER_SKIP_OG) {
+        try {
+          const png = await generateOgImage(paper);
+          await writeFile(join(outDir, "og.png"), png);
+        } catch (e) {
+          console.warn(`  OG image failed for ${doi}: ${e.message}`);
+        }
       }
     } else {
+      // Drop the landing copy so a DOI URL never presents the home page's text.
       withoutMeta++;
-      await writeFile(join(outDir, "index.html"), baseHtml, "utf-8");
+      const fallback = baseHtml.replace(
+        /<!--ssg-start-->[\s\S]*?<!--ssg-end-->/,
+        `<!--ssg-start--><main class="ssg"><h1>${escHtml(doi)}</h1><p>This record is in the atlas but its metadata could not be loaded at build time. <a href="${SITE_URL}/">Search the atlas</a> or open <a href="https://doi.org/${escHtml(doi)}">https://doi.org/${escHtml(doi)}</a>.</p></main><!--ssg-end-->`,
+      );
+      await writeFile(join(outDir, "index.html"), fallback, "utf-8");
     }
 
     const written = withMeta + withoutMeta;
@@ -489,8 +625,21 @@ async function main() {
   }
 
   console.log(
-    `Done. ${withMeta} pages with meta + OG image, ${withoutMeta} with fallback HTML.`,
+    `Done. ${withMeta} pages with meta${process.env.PRERENDER_SKIP_OG ? "" : " + OG image"}, ${withoutMeta} with fallback HTML.`,
   );
+
+  console.log("Writing browse pages...");
+  const browseUrls = await generateBrowsePages(
+    DIST_DIR,
+    dois.map((d) => papers[d]).filter(Boolean),
+  );
+  // generate-sitemap.js reads this so the browse layer is in the sitemap too.
+  await writeFile(
+    join(DIST_DIR, "browse-index.json"),
+    JSON.stringify(browseUrls, null, 0),
+    "utf-8",
+  );
+  console.log(`Done. ${browseUrls.length} browse pages written.`);
 }
 
 main().catch((err) => {

@@ -248,7 +248,9 @@ export const TopBar = (props: TopBarProps) => {
             <div class="topbar-icon">
               <img
                 src={forrt}
-                alt="F"
+                alt="FORRT"
+                width="20"
+                height="20"
                 style={{ width: "20px", height: "20px" }}
               />
             </div>

@@ -1,4 +1,5 @@
 import { writeFile, readFile } from "fs/promises";
+import { dirname, join } from "path";
 
 // const API_BASE = process.env.VITE_BACKEND_URL || "https://rep-api.forrt.org/v1";
 const API_BASE = "https://rep-api.forrt.org/v1/";
@@ -22,14 +23,30 @@ async function fetchAllDois() {
 }
 
 function encodeDoi(doi) {
-  // Percent-encode characters that are invalid in XML (and in URLs)
-  return doi
-    .replace(/&/g, "%26")
-    .replace(/</g, "%3C")
-    .replace(/>/g, "%3E");
+  // Brackets are the common case: emitted raw, the entry is rejected.
+  return doi.replace(
+    /[&<>"'\[\]{}|\\^`\s]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`,
+  );
 }
 
-function buildSitemap(dois) {
+/** Some records store a source URL in the DOI field; those have no page. */
+function isRealDoi(doi) {
+  return typeof doi === "string" && /^10\./.test(doi);
+}
+
+/** Browse-page URLs, written by the prerenderer. Absent on a pre-build run. */
+async function readBrowseUrls() {
+  try {
+    const path = join(dirname(OUTPUT_PATH), "browse-index.json");
+    const urls = JSON.parse(await readFile(path, "utf-8"));
+    return Array.isArray(urls) ? urls : [];
+  } catch {
+    return [];
+  }
+}
+
+function buildSitemap(dois, browseUrls) {
   const today = new Date().toISOString().split("T")[0];
 
   const urls = [
@@ -39,6 +56,16 @@ function buildSitemap(dois) {
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>`,
+    // Browse pages: the layer between the homepage and the DOI leaves
+    ...browseUrls.map(
+      (url) =>
+        `  <url>
+    <loc>${url}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>`,
+    ),
     // DOI pages
     ...dois.map(
       (doi) =>
@@ -60,12 +87,22 @@ ${urls.join("\n")}
 
 async function main() {
   console.log(`Fetching DOIs from ${API_BASE}/dois ...`);
-  const dois = await fetchAllDois();
-  console.log(`Found ${dois.length} DOIs`);
+  const all = await fetchAllDois();
+  const dois = all.filter(isRealDoi);
+  const skipped = all.length - dois.length;
+  console.log(
+    `Found ${all.length} DOIs${skipped ? `, skipping ${skipped} malformed` : ""}`,
+  );
 
-  const xml = buildSitemap(dois);
+  const browseUrls = await readBrowseUrls();
+  if (browseUrls.length)
+    console.log(`Including ${browseUrls.length} browse pages`);
+
+  const xml = buildSitemap(dois, browseUrls);
   await writeFile(OUTPUT_PATH, xml, "utf-8");
-  console.log(`Sitemap written to ${OUTPUT_PATH} (${dois.length + 1} URLs)`);
+  console.log(
+    `Sitemap written to ${OUTPUT_PATH} (${dois.length + browseUrls.length + 1} URLs)`,
+  );
 }
 
 main().catch((err) => {

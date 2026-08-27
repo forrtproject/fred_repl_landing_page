@@ -25,6 +25,16 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     solidPlugin(),
+    {
+      // `define` only reaches JS; the static copy in index.html needs its own pass.
+      name: 'paper-count-html',
+      transformIndexHtml(html: string) {
+        return html.replaceAll(
+          '__PAPER_COUNT__',
+          readPaperCount().toLocaleString('en-US'),
+        );
+      },
+    },
   ],
   server: {
     port: 3000,
