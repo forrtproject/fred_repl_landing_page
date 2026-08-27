@@ -12,6 +12,8 @@ import {
   fetchMultipleDOIInfo,
   fetchFuzzySearch,
   fetchAdvancedSearch,
+  fetchSet,
+  SetExpiredError,
 } from "./api/backend";
 import { formatReplicationResponse } from "./api/formatter";
 import { SearchOutcomesBanner } from "./components/replication/SearchOutcomesBanner";
@@ -170,6 +172,7 @@ function App() {
   let skipFuzzyEffect = false;
   let skipDoiEffect = false;
   let skipAdvancedEffect = false;
+  let resolvedSetId = "";
   // Monotonic search id; a resolving response is ignored if a newer search started.
   let searchGeneration = 0;
 
@@ -300,6 +303,8 @@ function App() {
     skipDoiEffect = true;
     setSearchParams({
       doi: undefined,
+      // Editing the tags makes any resolved set id stale, so it has to go.
+      set: undefined,
       dois: newTags.length > 0 ? newTags.join(",") : undefined,
       q: undefined,
     });
@@ -389,6 +394,7 @@ function App() {
     setSearchParams({
       q: undefined,
       dois: undefined,
+      set: undefined,
       mustAll: undefined,
       mustAny: undefined,
       mustNone: undefined,
@@ -397,6 +403,47 @@ function App() {
       outcomes: undefined,
       paperTypes: undefined,
     });
+  };
+
+  // A ?set= link carries only an id; the DOI list itself lives server-side and
+  // has to be fetched before any search can run.
+  const resolveSet = (id: string) => {
+    const gen = ++searchGeneration;
+    setSearchMode("doi");
+    setTags([]);
+    setInputValue("");
+    setIsLoading(true);
+    setHasSearched(true);
+    setHasEverSearched(true);
+    setResults({});
+    setSelectedDoi(null);
+    fetchSet(id)
+      .then((doiSet) => {
+        if (gen !== searchGeneration) return;
+        if (doiSet.dois.length === 0) {
+          setIsLoading(false);
+          setHasSearched(false);
+          showToast("Empty link", "This link doesn't contain any DOIs.");
+          return;
+        }
+        setTags(doiSet.dois);
+        doDoiSearch(doiSet.dois);
+      })
+      .catch((error) => {
+        if (gen !== searchGeneration) return;
+        setIsLoading(false);
+        setResults({});
+        setHasSearched(false);
+        if (error instanceof SetExpiredError) {
+          showToast(
+            "This link has expired",
+            "Shared DOI links last 30 days. Please generate a new one from wherever you opened this link.",
+          );
+          return;
+        }
+        const [t, m, r] = toastDetails(error);
+        showToast(t, m, "error", r);
+      });
   };
 
   const doDoiSearch = (dois: string[]) => {
@@ -558,6 +605,17 @@ function App() {
 
   // React to URL changes (e.g. browser back/forward)
   createEffect(() => {
+    const setId = String(searchParams.set || "");
+    if (setId) {
+      // Guarded so re-runs of this effect don't refetch the set we just resolved.
+      if (setId !== resolvedSetId) {
+        resolvedSetId = setId;
+        resolveSet(setId);
+      }
+      return;
+    }
+    resolvedSetId = "";
+
     const doi = String(searchParams.doi || searchParams.dois || "");
     const q = String(searchParams.q || "");
     const advMustAllParam = String(searchParams.mustAll || "");
@@ -713,7 +771,7 @@ function App() {
                 setSelectedDoi(null);
                 setHasSearched(false);
                 ignoreNextReset = true;
-                setSearchParams({ q: undefined, dois: undefined });
+                setSearchParams({ q: undefined, dois: undefined, set: undefined });
               }
             } else {
               debouncedFuzzySearch(q);
