@@ -33,6 +33,65 @@ export const exampleSearches = [
   { label: "10.1037/0022-3514.54.5.768", query: "10.1037/0022-3514.54.5.768" },
 ];
 
+const ChevronRight = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    aria-hidden="true"
+  >
+    <polyline points="9,18 15,12 9,6" />
+  </svg>
+);
+
+/** Real hrefs, not buttons: a DOI goes to its atlas page, a phrase to search. */
+export const ExampleSearchLinks = (props: {
+  label: string;
+  onExampleClick: (query: string) => void;
+  centered?: boolean;
+}) => {
+  const base = import.meta.env.BASE_URL || "/";
+  return (
+    <div
+      class="welcome-examples"
+      style={
+        props.centered
+          ? "margin-top: 1.5rem; justify-content: center"
+          : undefined
+      }
+    >
+      <div class="welcome-examples-label">{props.label}</div>
+      <For each={exampleSearches}>
+        {(ex) => {
+          const isDoi = ex.query.startsWith("10.");
+          const href = isDoi
+            ? `${base}doi/${ex.query}/`
+            : `${base}?q=${encodeURIComponent(ex.query)}`;
+          return (
+            <a
+              class="welcome-doi"
+              href={href}
+              onClick={(e) => {
+                // Modified and middle clicks fall through to the href.
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0)
+                  return;
+                e.preventDefault();
+                props.onExampleClick(ex.query);
+              }}
+            >
+              <span>{ex.label}</span>
+              <ChevronRight />
+            </a>
+          );
+        }}
+      </For>
+    </div>
+  );
+};
+
 export const WelcomeState = (props: WelcomeStateProps) => {
   let inputRef: HTMLInputElement | undefined;
   const [alertMessage, setAlertMessage] = createSignal<string | null>(null);
@@ -279,27 +338,10 @@ export const WelcomeState = (props: WelcomeStateProps) => {
         </a>
       </div>
 
-      <div class="welcome-examples">
-        <div class="welcome-examples-label">Example searches</div>
-        {exampleSearches.map((ex) => (
-          <div
-            class="welcome-doi"
-            onClick={() => props.onExampleClick(ex.query)}
-          >
-            <span>{ex.label}</span>
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polyline points="9,18 15,12 9,6" />
-            </svg>
-          </div>
-        ))}
-      </div>
+      <ExampleSearchLinks
+        label="Example searches"
+        onExampleClick={props.onExampleClick}
+      />
       <p class="welcome-footnote">
         Powered by FORRT's Library of Reproduction and Replication Attempts
         (FLoRA), the Replication Atlas covers {paperCount.toLocaleString()}+

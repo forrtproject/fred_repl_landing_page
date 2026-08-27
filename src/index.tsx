@@ -9,6 +9,9 @@ const base = import.meta.env.BASE_URL
 
 const root = document.getElementById('root')
 
+// #root ships a crawlable static copy; Solid appends rather than replaces it.
+if (root) root.textContent = ''
+
 render(
   () => (
     <Router base={base.endsWith('/') ? base.slice(0, -1) : base}>

@@ -1,4 +1,5 @@
 import { createSignal, For } from "solid-js";
+import { A } from "@solidjs/router";
 import type { ReplicationItem } from "../../@types";
 import { authorYearLine, normalizeOutcome } from "../../utils/formatter";
 
@@ -78,7 +79,16 @@ export const ReplicationItemCard = (props: ReplicationItemCardProps) => {
           </For>
         </div>
         <div class="ri-body">
-          {props.item.title ? <div class="ri-title">{props.item.title}</div> : null}
+          {props.item.title ? (
+            <div class="ri-title">
+              {/* A linked study usually has its own atlas page; link to it. */}
+              {props.item.doi?.startsWith("10.") ? (
+                <A href={`/doi/${props.item.doi}/`}>{props.item.title}</A>
+              ) : (
+                props.item.title
+              )}
+            </div>
+          ) : null}
           {meta() ? <div class="ri-meta">{meta()}</div> : null}
           {props.item.doi ? (
             <a

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && npm run copy-index2 && npm run generate-sitemap && npm run prerender-doi-pages",
+    "build": "tsc -b && vite build && npm run copy-index2 && npm run prerender-doi-pages && npm run generate-sitemap",
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "prerender-doi-pages": "node scripts/prerender-doi-pages.js",
     "build:gh-pages": "BUILD_ENV=gh-pages && npm run build",

@@ -19,7 +19,7 @@ import { TopBar, type SearchMode } from "./components/layout/TopBar";
 import { StudyListPanel } from "./components/layout/StudyListPanel";
 import {
   WelcomeState,
-  exampleSearches,
+  ExampleSearchLinks,
 } from "./components/layout/WelcomeState";
 import { AdvancedSearchPanel } from "./components/layout/AdvancedSearchPanel";
 import { DetailView } from "./components/layout/DetailView";
@@ -815,29 +815,10 @@ function App() {
                         }
                       >
                         <div class="no-results-pane">
-                          <div class="welcome-examples">
-                            <div class="welcome-examples-label">
-                              Example searches
-                            </div>
-                            {exampleSearches.map((ex) => (
-                              <div
-                                class="welcome-doi"
-                                onClick={() => handleExampleClick(ex.query)}
-                              >
-                                <span>{ex.label}</span>
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  stroke-width="2"
-                                >
-                                  <polyline points="9,18 15,12 9,6" />
-                                </svg>
-                              </div>
-                            ))}
-                          </div>
+                          <ExampleSearchLinks
+                            label="Example searches"
+                            onExampleClick={handleExampleClick}
+                          />
                         </div>
                       </Show>
                     }
@@ -861,27 +842,11 @@ function App() {
                       <div class="no-results-sub">
                         Try a different search term or DOI
                       </div>
-                      <div class="welcome-examples" style="margin-top: 1.5rem">
-                        <div class="welcome-examples-label">Try an example</div>
-                        {exampleSearches.map((ex) => (
-                          <div
-                            class="welcome-doi"
-                            onClick={() => handleExampleClick(ex.query)}
-                          >
-                            <span>{ex.label}</span>
-                            <svg
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                            >
-                              <polyline points="9,18 15,12 9,6" />
-                            </svg>
-                          </div>
-                        ))}
-                      </div>
+                      <ExampleSearchLinks
+                        label="Try an example"
+                        onExampleClick={handleExampleClick}
+                        centered
+                      />
                     </div>
                   </Show>
                 }

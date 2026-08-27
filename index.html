@@ -5,54 +5,157 @@
     <link rel="icon" type="image/png" href="/icon_hub.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#853953" />
-    <title>FLoRA Replication Atlas — Has This Study Been Replicated?</title>
-    <meta name="description" content="Search by DOI, title, or author to instantly check whether a study has been replicated. Browse replication outcomes across psychology and social sciences. Powered by FORRT's Replication Database (FReD)." />
-    <meta name="keywords" content="replication atlas, replication database, has this study been replicated, replication crisis, open science, psychology replication, DOI lookup, FORRT, FReD, reproducibility" />
+    <title>Has this study been replicated? — FLoRA Replication Atlas</title>
+    <meta name="description" content="Look up any study by DOI, title, or author and see every replication and reproduction attempt on record, with the outcome and the passage it was read from. __PAPER_COUNT__+ findings from FORRT." />
     <link rel="canonical" href="https://forrt.org/flora-replication-atlas/" />
+
+    <!-- Nothing paints until this cross-origin POST returns, so pay DNS and TLS up front. -->
+    <link rel="preconnect" href="https://rep-api.forrt.org" crossorigin />
+    <link rel="dns-prefetch" href="https://rep-api.forrt.org" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="FLoRA Replication Atlas — Has This Study Been Replicated?" />
-    <meta property="og:description" content="Search by DOI, title, or author to check replication outcomes across psychology and social sciences. Powered by FORRT." />
+    <meta property="og:title" content="Has this study been replicated? — FLoRA Replication Atlas" />
+    <meta property="og:description" content="Search by DOI, title, or author to check replication outcomes across psychology and the social sciences. Powered by FORRT." />
     <meta property="og:url" content="https://forrt.org/flora-replication-atlas/" />
     <meta property="og:site_name" content="FLoRA Replication Atlas" />
     <meta property="og:image" content="https://forrt.org/flora-replication-atlas/og-banner.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="FLoRA Replication Atlas — Has This Study Been Replicated?" />
+    <meta property="og:image:alt" content="FLoRA Replication Atlas. Has this study been replicated?" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="FLoRA Replication Atlas" />
     <meta name="twitter:description" content="Instantly check if a study has been replicated. Search by DOI, author, or title." />
     <meta name="twitter:image" content="https://forrt.org/flora-replication-atlas/og-banner.png" />
-    <meta name="twitter:image:alt" content="FLoRA Replication Atlas — Has This Study Been Replicated?" />
+    <meta name="twitter:image:alt" content="FLoRA Replication Atlas. Has this study been replicated?" />
 
     <!-- Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "FLoRA Replication Atlas",
-      "description": "Search tool to check whether scientific studies have been replicated. Browse replication outcomes by DOI, title, or author across psychology and social sciences.",
-      "url": "https://forrt.org/flora-replication-atlas/",
-      "applicationCategory": "Science",
-      "operatingSystem": "Web",
-      "provider": {
-        "@type": "Organization",
-        "name": "FORRT — Framework for Open and Reproducible Research Training",
-        "url": "https://forrt.org"
-      },
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://forrt.org/flora-replication-atlas/#app",
+          "name": "FLoRA Replication Atlas",
+          "description": "Search tool to check whether scientific studies have been replicated. Browse replication outcomes by DOI, title, or author across psychology and the social sciences.",
+          "url": "https://forrt.org/flora-replication-atlas/",
+          "mainEntityOfPage": "https://forrt.org/flora-replication-atlas/",
+          "applicationCategory": "Science",
+          "operatingSystem": "Web",
+          "isPartOf": { "@id": "https://forrt.org/flora-replication-atlas/#dataset" },
+          "provider": {
+            "@type": "Organization",
+            "name": "FORRT: Framework for Open and Reproducible Research Training",
+            "url": "https://forrt.org"
+          },
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://forrt.org/flora-replication-atlas/?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Dataset",
+          "@id": "https://forrt.org/flora-replication-atlas/#dataset",
+          "name": "FLoRA: FORRT's Library of Reproduction and Replication Attempts",
+          "alternateName": "FORRT Replication Database (FReD)",
+          "description": "A curated index of __PAPER_COUNT__+ original research findings paired with recorded replication and reproduction attempts, including the outcome recorded for each attempt and the quoted passage it was read from.",
+          "url": "https://forrt.org/flora-replication-atlas/",
+          "mainEntityOfPage": "https://forrt.org/flora-replication-atlas/",
+          "keywords": [
+            "replication",
+            "reproducibility",
+            "open science",
+            "metascience",
+            "psychology"
+          ],
+          "isAccessibleForFree": true,
+          "license": "https://creativecommons.org/licenses/by/4.0/",
+          "temporalCoverage": "1950/..",
+          "creator": {
+            "@type": "Organization",
+            "name": "FORRT: Framework for Open and Reproducible Research Training",
+            "url": "https://forrt.org"
+          },
+          "sameAs": [
+            "https://forrt.org/replication-hub/",
+            "https://forrt.org/flora-explorer/"
+          ],
+          "distribution": {
+            "@type": "DataDownload",
+            "encodingFormat": "application/json",
+            "contentUrl": "https://rep-api.forrt.org/v1/dois"
+          }
+        }
+      ]
     }
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--ssg-start-->
+      <main class="ssg">
+        <h1>Has this study been replicated?</h1>
+        <p>
+          Search the FLoRA Replication Atlas by DOI, title, or author to see every
+          replication and reproduction attempt on record for a finding, the outcome
+          each one reported, and the passage that outcome was read from.
+        </p>
+
+        <h2>Browse the atlas</h2>
+        <ul>
+          <li><a href="/flora-replication-atlas/browse/">All browse pages</a>: by outcome, decade, and journal.</li>
+          <li><a href="/flora-replication-atlas/browse/outcome/failed/">Failed replications</a> and <a href="/flora-replication-atlas/browse/outcome/successful/">successful replications</a>.</li>
+          <li><a href="https://forrt.org/flora-explorer/">FLoRA Explorer</a>: __PAPER_COUNT__+ original findings paired with replication outcomes, filterable.</li>
+        </ul>
+
+        <h2>What a record shows</h2>
+        <p>
+          For example, Nuttin's 1987 name letter effect study
+          (<a href="/flora-replication-atlas/doi/10.1002/ejsp.2420170402/">10.1002/ejsp.2420170402</a>,
+          <i>European Journal of Social Psychology</i>) has one replication on record:
+          Ziano, Yao, Gao and Feldman (2020, <i>Journal of Experimental Social
+          Psychology</i>), recorded as successful, with the quoted passage the label
+          was read from.
+        </p>
+        <dl>
+          <dt>The original study</dt>
+          <dd>Title, authors, journal, and year, with a copyable APA reference and BibTeX entry.</dd>
+          <dt>Every replication and reproduction on record</dt>
+          <dd>Each attempt carries its own citation and DOI, and links to its own page in the atlas.</dd>
+          <dt>The sentence behind the outcome label</dt>
+          <dd>Where the atlas records an outcome, it also shows the quoted passage it was read from and where in the paper that passage appears.</dd>
+          <dt>Routes out of the atlas</dt>
+          <dd>Publisher DOI links, open-access copies where they exist, and the PubPeer thread for post-publication discussion.</dd>
+        </dl>
+
+        <h2>Where the data comes from</h2>
+        <p>
+          The Replication Atlas is a search layer over FLoRA, FORRT's Library of
+          Reproduction and Replication Attempts, which grows out of the FORRT
+          Replication Database (FReD). It currently covers __PAPER_COUNT__+ original
+          findings paired with replication and reproduction attempts across research
+          disciplines.
+        </p>
+        <p>
+          Coverage is not complete, and it is not meant to be read as a verdict on any
+          single paper. If a replication is missing, or a record looks wrong, sending
+          it in is the fastest way to get it fixed.
+        </p>
+        <p>
+          <a href="https://forrt.org/replication-hub/">FORRT Replication Hub</a> &middot;
+          <a href="https://forrt.org/flora-explorer/">FLoRA Explorer</a>
+        </p>
+      </main>
+      <!--ssg-end-->
+    </div>
     <!-- GitHub Pages SPA redirect restore -->
     <script>
       (function () {
