@@ -4,7 +4,7 @@ import { formatReplicationResponse } from "../../api/formatter";
 import { formatAuthors } from "../../utils/formatter";
 import { smoothScrollIntoView } from "../../utils/smoothScroll";
 
-type TypeFilter = "original" | "replication";
+export type PaperTypeFilter = "original" | "replication" | "reproduction";
 
 type StudyListPanelProps = {
   results: Record<string, OriginalPaper>;
@@ -12,8 +12,8 @@ type StudyListPanelProps = {
   onSelect: (doi: string) => void;
   isLoading: boolean;
   hasSearched: boolean;
-  typeFilter: TypeFilter;
-  onTypeFilterChange: (f: TypeFilter) => void;
+  typeFilter: PaperTypeFilter;
+  onTypeFilterChange: (f: PaperTypeFilter) => void;
 };
 
 type OutcomeStatus = "failed" | "mixed" | "partial" | "successful" | "blank";
@@ -99,13 +99,26 @@ export const StudyListPanel = (props: StudyListPanelProps) => {
         const rep = formatReplicationResponse(paper);
         const status = resolveOverallStatus(rep);
         const hasData = !!(rep.title && paper.record);
+        const types = paper.types || [];
         const isOriginal =
+          types.includes("original") ||
           (rep.replications?.length || 0) > 0 ||
           (rep.reproductions?.length || 0) > 0;
+        const isReproduction = types.includes("reproduction");
+        // A record listing originals is a replication unless its type says otherwise.
         const isReplication =
-          (rep.originals?.length || 0) > 0 ||
-          (paper.types?.includes("reproduction") ?? false);
-        return { doi, paper, rep, status, hasData, isOriginal, isReplication };
+          types.includes("replication") ||
+          (!isReproduction && (rep.originals?.length || 0) > 0);
+        return {
+          doi,
+          paper,
+          rep,
+          status,
+          hasData,
+          isOriginal,
+          isReplication,
+          isReproduction,
+        };
       })
       .sort((a, b) => {
         if (a.hasData === b.hasData) return 0;
@@ -116,6 +129,8 @@ export const StudyListPanel = (props: StudyListPanelProps) => {
   const entries = createMemo(() => {
     const filter = props.typeFilter;
     if (filter === "original") return allEntries().filter((e) => e.isOriginal);
+    if (filter === "reproduction")
+      return allEntries().filter((e) => e.isReproduction);
     return allEntries().filter((e) => e.isReplication);
   });
 
@@ -123,6 +138,8 @@ export const StudyListPanel = (props: StudyListPanelProps) => {
   const originalCount = () => allEntries().filter((e) => e.isOriginal).length;
   const replicationCount = () =>
     allEntries().filter((e) => e.isReplication).length;
+  const reproductionCount = () =>
+    allEntries().filter((e) => e.isReproduction).length;
 
   type EntryItem = ReturnType<typeof allEntries>[number];
 
@@ -133,7 +150,9 @@ export const StudyListPanel = (props: StudyListPanelProps) => {
     const filterLabel =
       props.typeFilter === "original"
         ? "Original Studies"
-        : "Replication Studies";
+        : props.typeFilter === "reproduction"
+          ? "Reproduction Studies"
+          : "Replication Studies";
     const esc = (s: string) =>
       s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -184,10 +203,12 @@ export const StudyListPanel = (props: StudyListPanelProps) => {
 
     const totOrig = visible.filter((e) => e.isOriginal).length;
     const totRepl = visible.filter((e) => e.isReplication).length;
+    const totRepro = visible.filter((e) => e.isReproduction).length;
     const summaryParts: string[] = [];
     summaryParts.push(`${visible.length} ${visible.length === 1 ? "study" : "studies"}`);
     if (totOrig > 0) summaryParts.push(`${totOrig} original`);
     if (totRepl > 0) summaryParts.push(`${totRepl} replication`);
+    if (totRepro > 0) summaryParts.push(`${totRepro} reproduction`);
 
     const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>FLoRA Replication Atlas Export — ${esc(filterLabel)}</title>
@@ -283,7 +304,7 @@ footer { margin-top: 2rem; padding-top: 0.6rem; border-top: 1px solid #ddd; font
             <button
               class="lp-export-btn"
               onClick={() => handleExportPdf()}
-              title={`Export ${props.typeFilter === "original" ? "originals" : "replications"} to PDF`}
+              title={`Export ${props.typeFilter}s to PDF`}
             >
               <PrintIcon /> Export
             </button>
@@ -295,7 +316,9 @@ footer { margin-top: 2rem; padding-top: 0.6rem; border-top: 1px solid #ddd; font
         when={
           !props.isLoading &&
           totalCount() > 0 &&
-          (originalCount() > 0 || replicationCount() > 0)
+          (originalCount() > 0 ||
+            replicationCount() > 0 ||
+            reproductionCount() > 0)
         }
       >
         <div class="sli-filter-bar">
@@ -314,6 +337,15 @@ footer { margin-top: 2rem; padding-top: 0.6rem; border-top: 1px solid #ddd; font
             >
               Replication{" "}
               <span class="sli-filter-count">{replicationCount()}</span>
+            </button>
+          </Show>
+          <Show when={reproductionCount() > 0}>
+            <button
+              class={`sli-filter-btn reproduction ${props.typeFilter === "reproduction" ? "active" : ""}`}
+              onClick={() => props.onTypeFilterChange("reproduction")}
+            >
+              Reproduction{" "}
+              <span class="sli-filter-count">{reproductionCount()}</span>
             </button>
           </Show>
           <Show when={entries().length > 1}>

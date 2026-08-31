@@ -501,6 +501,11 @@ body {
   border-color: #c4b5fd;
   color: #7c3aed;
 }
+.sli-filter-btn.reproduction.active {
+  background: #fff7ed;
+  border-color: #fdba74;
+  color: #c2410c;
+}
 .sli-filter-count {
   font-size: 10px;
   font-weight: 400;
@@ -701,6 +706,10 @@ body {
 .sli-type-tag.replication {
   background: #f5f3ff;
   color: #7c3aed;
+}
+.sli-type-tag.reproduction {
+  background: #fff7ed;
+  color: #c2410c;
 }
 .sli-pills-sep {
   width: 1px;

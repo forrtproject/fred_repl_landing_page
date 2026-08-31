@@ -18,7 +18,10 @@ import {
 import { formatReplicationResponse } from "./api/formatter";
 import { SearchOutcomesBanner } from "./components/replication/SearchOutcomesBanner";
 import { TopBar, type SearchMode } from "./components/layout/TopBar";
-import { StudyListPanel } from "./components/layout/StudyListPanel";
+import {
+  StudyListPanel,
+  type PaperTypeFilter,
+} from "./components/layout/StudyListPanel";
 import {
   WelcomeState,
   ExampleSearchLinks,
@@ -35,15 +38,27 @@ import { smoothScrollIntoView } from "./utils/smoothScroll";
 
 const isDoi = (s: string) => /^10\.\d{4,}\//.test(s.trim());
 
-// Shared original/replication classification, kept in sync with StudyListPanel.
+// Shared paper-type classification, kept in sync with StudyListPanel.
 const classifyPaper = (paper: OriginalPaper) => {
   const rep = formatReplicationResponse(paper);
+  const types = paper.types || [];
   const isOriginal =
-    (rep.replications?.length || 0) > 0 || (rep.reproductions?.length || 0) > 0;
+    types.includes("original") ||
+    (rep.replications?.length || 0) > 0 ||
+    (rep.reproductions?.length || 0) > 0;
+  const isReproduction = types.includes("reproduction");
+  // A record listing originals is a replication unless its type says otherwise.
   const isReplication =
-    (rep.originals?.length || 0) > 0 ||
-    (paper.types?.includes("reproduction") ?? false);
-  return { isOriginal, isReplication };
+    types.includes("replication") ||
+    (!isReproduction && (rep.originals?.length || 0) > 0);
+  return { isOriginal, isReplication, isReproduction };
+};
+
+const matchesFilter = (paper: OriginalPaper, filter: PaperTypeFilter) => {
+  const c = classifyPaper(paper);
+  if (filter === "original") return c.isOriginal;
+  if (filter === "reproduction") return c.isReproduction;
+  return c.isReplication;
 };
 
 const debounce = <T extends unknown[]>(
@@ -102,9 +117,7 @@ function App() {
   const [isLoading, setIsLoading] = createSignal(false);
   const [hasSearched, setHasSearched] = createSignal(false);
   const [hasEverSearched, setHasEverSearched] = createSignal(false);
-  const [typeFilter, setTypeFilter] = createSignal<"original" | "replication">(
-    "original",
-  );
+  const [typeFilter, setTypeFilter] = createSignal<PaperTypeFilter>("original");
   const [showImportModal, setShowImportModal] = createSignal(false);
 
   const [showAdvancedModal, setShowAdvancedModal] = createSignal(false);
@@ -120,11 +133,9 @@ function App() {
 
   const filteredResults = createMemo(() => {
     const filter = typeFilter();
-    return Object.entries(results()).filter(([, paper]) => {
-      const { isOriginal, isReplication } = classifyPaper(paper);
-      if (filter === "original") return isOriginal;
-      return isReplication;
-    });
+    return Object.entries(results()).filter(([, paper]) =>
+      matchesFilter(paper, filter),
+    );
   });
 
   const aggregateOutcomes = createMemo(() => {
@@ -133,9 +144,7 @@ function App() {
     const counts = Object.values(res).reduce(
       (acc, paper) => {
         const rep = formatReplicationResponse(paper);
-        const { isOriginal, isReplication } = classifyPaper(paper);
-        if (filter === "original" && !isOriginal) return acc;
-        if (filter === "replication" && !isReplication) return acc;
+        if (!matchesFilter(paper, filter)) return acc;
         acc.success += rep.outcomes?.success ?? 0;
         acc.failed += rep.outcomes?.failed ?? 0;
         acc.mixed += rep.outcomes?.mixed ?? 0;
@@ -154,10 +163,8 @@ function App() {
 
   const paperCount = createMemo(() => {
     const filter = typeFilter();
-    return Object.values(results()).filter((p) => {
-      const { isOriginal, isReplication } = classifyPaper(p);
-      return filter === "original" ? isOriginal : isReplication;
-    }).length;
+    return Object.values(results()).filter((p) => matchesFilter(p, filter))
+      .length;
   });
 
   const paperRefs: Record<string, HTMLDivElement> = {};
@@ -354,16 +361,11 @@ function App() {
 
     // Auto-switch filter if the current one has no matches
     const papers = Object.values(data);
-    const hasOriginals = papers.some((p) => classifyPaper(p).isOriginal);
-    const hasReplications = papers.some((p) => classifyPaper(p).isReplication);
-    if (typeFilter() === "original" && !hasOriginals && hasReplications) {
-      setTypeFilter("replication");
-    } else if (
-      typeFilter() === "replication" &&
-      !hasReplications &&
-      hasOriginals
-    ) {
-      setTypeFilter("original");
+    if (!papers.some((p) => matchesFilter(p, typeFilter()))) {
+      const fallback = (
+        ["original", "replication", "reproduction"] as PaperTypeFilter[]
+      ).find((f) => papers.some((p) => matchesFilter(p, f)));
+      if (fallback) setTypeFilter(fallback);
     }
 
     const keys = Object.keys(data);
