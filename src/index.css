@@ -20,6 +20,8 @@
   --success-bg: #f0fdf4;
   --success-border: #86efac;
   --warning: #b8860b;
+  /* Text-only variant: --warning is 3.25:1 on white, below AA for body copy. */
+  --warning-text: #8c6708;
   --warning-bg: #fef8e8;
   --warning-border: #f0dfa0;
   --error: #b42318;
@@ -66,6 +68,10 @@
      One scale, applied by role: inputs and tags take -sm, buttons and controls
      take the base, cards and panels take -lg, chips take -full. Bare `50%` is
      reserved for genuine circles (spinners, status dots). Nothing else. */
+  /* Skeleton track: darker than --surface-alt so the bar and its sweep both
+     read against a white card. */
+  --skeleton: #e2e4e4;
+
   --radius-sm: 4px;
   --radius: 8px;
   --radius-lg: 14px;
@@ -338,6 +344,7 @@ body {
   font-size: var(--fs-4);
   padding: 0.35rem 0.7rem;
   border-radius: var(--radius);
+  white-space: nowrap;
   transition: all var(--transition-fast);
 }
 .topbar-link:hover {
@@ -353,6 +360,7 @@ body {
   font-size: var(--fs-3);
   text-decoration: none;
   margin-left: 0.25rem;
+  white-space: nowrap;
   transition: background var(--transition-fast);
 }
 .topbar-cta:hover {
@@ -1311,6 +1319,8 @@ body {
 }
 .lr-tag {
   align-self: flex-start;
+  /* Same optical outdent as .dc-tags. */
+  margin-left: -0.5rem;
   font-size: var(--fs-1);
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -1518,7 +1528,6 @@ body {
   }
 }
 
-
 /* ─── Welcome search bar ─── */
 .welcome-search {
   display: flex;
@@ -1599,7 +1608,10 @@ body {
   background: var(--white);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
+  /* clip, not hidden: `hidden` would make this card the nearest scrollport and
+     silently kill the sticky rail inside it. */
   overflow: hidden;
+  overflow: clip;
   box-shadow: var(--shadow-sm);
   animation: slideUp 0.3s ease-out;
 }
@@ -1614,75 +1626,238 @@ body {
   }
 }
 
-/* ─── Detail header ─── */
-.dh {
-  padding: 1.5rem 1.75rem;
-  border-bottom: 1px solid var(--border-light);
+/* ═══════════════════════════════
+   RECORD CARD
+   Two columns: a sticky identity rail (what the paper is) beside an evidence
+   column (what the record says happened to it).
+═══════════════════════════════ */
+.dc {
+  display: grid;
+  grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
 }
-.dh-label {
-  font-size: var(--fs-1);
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: var(--text-muted);
-  font-weight: 600;
-  margin-bottom: 0.4rem;
+.dc-rail {
+  border-right: 1px solid var(--border-light);
+  background: linear-gradient(180deg, var(--primary-faint) 0%, var(--white) 42%);
 }
-.dh-title {
+/* The cell stretches so the rail can stick past a long list of attempts.
+   --rail-top goes negative (set in DetailView) when the rail is taller than the
+   scroll viewport, so it rides up to its own end instead of pinning with its
+   foot cut off and unreachable. */
+.dc-rail-inner {
+  position: sticky;
+  top: var(--rail-top, 0px);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.dc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  /* Outdent by the pill's inline padding so the label text, not the pill edge,
+     lines up with the title beneath it. */
+  margin-left: -0.55rem;
+}
+.dc-title {
   font-family: var(--font-display);
-  font-size: var(--fs-7);
+  font-size: var(--fs-6);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.28;
+  letter-spacing: -0.01em;
   color: var(--text);
-  margin-bottom: 0.4rem;
+  margin: 0 0 var(--space-2);
+  text-wrap: balance;
 }
-.dh-top {
+.dc-authors {
+  font-size: var(--fs-4);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.45;
+}
+.dc-journal {
+  font-size: var(--fs-4);
+  font-style: italic;
+  color: var(--text-muted);
+  margin: 0;
+}
+.dc-doi {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2);
+  color: var(--primary);
+  margin-top: var(--space-2);
+  word-break: break-all;
+  text-decoration: none;
+}
+.dc-doi:hover {
+  text-decoration: underline;
+}
+
+.dc-actions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
-  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
-/* Mobile-only tags row (hidden on desktop, shown at <=640px) */
-.dh-top.dh-top-mobile {
-  display: none;
-}
-.dh-tags {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-/* Desktop: title + tags inline */
-.dh-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-.dh-title-row .dh-title {
-  margin-bottom: 0.4rem;
-}
-.dh-title-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  flex-shrink: 0;
-}
-.dh-share-btn {
+.dc-primary,
+.dc-secondary {
   display: inline-flex;
   align-items: center;
-  padding: 0.3rem 0.45rem;
-  border: 1px solid var(--border-light);
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
   border-radius: var(--radius);
-  color: var(--text-secondary);
-  background: var(--white);
+  font-size: var(--fs-4);
+  font-weight: 600;
+  font-family: var(--font-body);
+  text-decoration: none;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
+  white-space: nowrap;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
 }
-.dh-share-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+.dc-primary {
+  background: var(--primary);
+  color: var(--white);
+  border: 1px solid var(--primary);
 }
+.dc-primary:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+.dc-secondary {
+  background: var(--white);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.dc-secondary:hover {
+  border-color: var(--primary-soft);
+  background: var(--primary-faint);
+}
+
+/* Utilities are secondary to the verdict, so they sit as a quiet cluster. */
+.dc-utils {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  /* Outdent by .dc-util's own inline padding so these icons line up with the
+     title, DOI and flag link. The rule below keeps the divider at the real
+     content edge rather than following the outdent. */
+  margin-left: -0.4rem;
+}
+.dc-utils::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0.4rem;
+  right: 0;
+  border-top: 1px solid var(--border-light);
+}
+.dc-util {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.3rem 0.4rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-3);
+  font-family: var(--font-body);
+  color: var(--text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
+}
+.dc-util:hover {
+  color: var(--primary-dark);
+  background: var(--primary-faint);
+}
+.dc-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: var(--space-3);
+  font-size: var(--fs-3);
+  color: var(--text-faint);
+  text-decoration: none;
+}
+.dc-flag:hover {
+  color: var(--error);
+}
+
+/* ─── Verdict: the answer to the page's headline question ─── */
+.dc-main {
+  min-width: 0;
+}
+.dc-verdict {
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+}
+.dc-verdict-text {
+  font-family: var(--font-display);
+  font-size: var(--fs-6);
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0;
+  color: var(--text);
+  text-wrap: balance;
+}
+.dc-verdict--failed .dc-verdict-text {
+  color: var(--error);
+}
+.dc-verdict--success .dc-verdict-text {
+  color: var(--success-light);
+}
+.dc-verdict--mixed .dc-verdict-text {
+  color: var(--warning-text);
+}
+.dc-verdict--none .dc-verdict-text,
+.dc-verdict--neutral .dc-verdict-text {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.dc-spine {
+  display: flex;
+  height: 6px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-3);
+  background: var(--surface-alt);
+}
+.dc-spine-seg.success {
+  background: var(--success);
+}
+.dc-spine-seg.mixed {
+  background: var(--warning);
+}
+.dc-spine-seg.failed {
+  background: var(--error);
+}
+/* With no verdict above it the tab row is the top of the column and would
+   otherwise sit flush against the card edge. */
+.dc-main > .tabs-bar:first-child {
+  padding-top: var(--space-4);
+}
+
+@media (max-width: 1100px) {
+  .dc {
+    grid-template-columns: 1fr;
+  }
+  .dc-rail {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .dc-rail-inner {
+    position: static;
+  }
+}
+
 .dh-tag {
   display: inline-block;
   padding: 0.15rem 0.55rem;
@@ -1711,153 +1886,6 @@ body {
 .dh-tag.comp-unchecked {
   background: #f3f4f6;
   color: #6b7280;
-}
-.dh-authors {
-  font-size: var(--fs-5);
-  color: var(--text-secondary);
-  margin-bottom: 0.15rem;
-}
-.dh-journal {
-  font-size: var(--fs-4);
-  color: var(--text-muted);
-  font-style: italic;
-  margin-bottom: 0.15rem;
-}
-.dh-doi-link {
-  font-size: var(--fs-4);
-  color: var(--primary-light);
-  text-decoration: none;
-  transition: color var(--transition-fast);
-}
-.dh-doi-link:hover {
-  color: var(--primary);
-  text-decoration: underline;
-}
-
-/* APA reference */
-.dh-apa {
-  margin-top: 0.85rem;
-  padding: 0.65rem 0.85rem;
-  background: var(--surface);
-  border-radius: var(--radius);
-  border-left: 3px solid var(--primary);
-}
-.dh-apa-label {
-  font-size: var(--fs-1);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--text-muted);
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-.dh-apa-text {
-  font-family: var(--font-display);
-  font-size: var(--fs-4);
-  line-height: 1.55;
-  color: var(--text-secondary);
-  font-style: italic;
-  font-weight: 400;
-}
-
-/* ─── Action bar ─── */
-.action-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.65rem 1.75rem;
-  border-bottom: 1px solid var(--border-light);
-  background: #fafaf7;
-  flex-wrap: wrap;
-}
-.ab-group {
-  display: flex;
-  gap: 0.35rem;
-  align-items: center;
-}
-.ab-sep {
-  width: 1px;
-  height: 20px;
-  background: var(--border-light);
-  margin: 0 0.35rem;
-}
-.ab-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.65rem;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius);
-  font-size: var(--fs-3);
-  color: var(--text-secondary);
-  background: var(--white);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  text-decoration: none;
-  font-family: var(--font-body);
-  font-weight: 500;
-  white-space: nowrap;
-}
-.ab-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-.ab-btn.accent {
-  background: var(--primary);
-  color: var(--white);
-  border-color: var(--primary);
-}
-.ab-btn.accent:hover {
-  background: var(--primary-light);
-}
-.ab-btn svg {
-  flex-shrink: 0;
-}
-
-/* ─── Progress bar ─── */
-.progress-section {
-  padding: 0.65rem 1.75rem;
-  border-bottom: 1px solid var(--border-light);
-  background: #fafaf7;
-}
-.progress-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.progress-label {
-  font-size: var(--fs-2);
-  color: var(--text-muted);
-  white-space: nowrap;
-  min-width: 120px;
-}
-.progress-track {
-  flex: 1;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--surface);
-  display: flex;
-  overflow: hidden;
-  gap: 1px;
-}
-.progress-seg {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 0.5s ease;
-}
-.progress-seg.success {
-  background: var(--success);
-}
-.progress-seg.mixed {
-  background: var(--warning);
-}
-.progress-seg.failed {
-  background: var(--error);
-}
-.progress-pct {
-  font-size: var(--fs-3);
-  font-weight: 600;
-  color: var(--success);
-  white-space: nowrap;
 }
 
 /* ═══════════════════════════════
@@ -1917,12 +1945,21 @@ body {
 }
 .rep-item {
   border: 1px solid var(--border-light);
+  border-left: 3px solid var(--border);
   border-radius: var(--radius);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
   background: var(--white);
-  transition: box-shadow var(--transition-fast);
+  transition:
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
   overflow: hidden;
 }
+/* The left edge carries the outcome, so a list of attempts is scannable
+   without reading a single badge. */
+.rep-item--successful { border-left-color: var(--success); }
+.rep-item--failed     { border-left-color: var(--error); }
+.rep-item--mixed,
+.rep-item--partial    { border-left-color: var(--warning); }
 .rep-item:hover {
   box-shadow: var(--shadow-sm);
 }
@@ -2051,39 +2088,11 @@ body {
 }
 
 /* Expandable quote */
-.ri-expand {
+.ri-quote {
+  margin: 0;
+  padding: 0.75rem 1rem 0.85rem;
   border-top: 1px solid var(--border-light);
   background: #fcfbf8;
-}
-.ri-expand-toggle {
-  width: 100%;
-  padding: 0.45rem 1rem;
-  font-size: var(--fs-3);
-  font-weight: 600;
-  color: var(--primary);
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  font-family: var(--font-body);
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  transition: color var(--transition-fast);
-}
-.ri-expand-toggle:hover {
-  color: var(--primary-light);
-}
-.ri-expand-toggle .arrow {
-  transition: transform var(--transition);
-  font-size: var(--fs-1);
-  display: inline-block;
-}
-.ri-expand-toggle.expanded .arrow {
-  transform: rotate(90deg);
-}
-.ri-quote {
-  padding: 0 1rem 0.75rem;
 }
 .ri-quote-text {
   font-family: var(--font-display);
@@ -2091,16 +2100,32 @@ body {
   line-height: 1.6;
   color: var(--text-secondary);
   font-style: italic;
-  padding: 0.6rem 0.85rem;
-  background: var(--white);
-  border-left: 3px solid var(--border);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 0;
+  quotes: "\201C" "\201D";
 }
-.ri-quote-source {
+.ri-quote-text::before { content: open-quote; }
+.ri-quote-text::after  { content: close-quote; }
+.ri-quote-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
   font-size: var(--fs-2);
   color: var(--text-muted);
-  margin-top: 0.35rem;
-  font-style: normal;
+}
+.ri-quote-more {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+}
+.ri-quote-more:hover {
+  text-decoration: underline;
 }
 
 /* ═══════════════════════════════
@@ -2488,53 +2513,179 @@ body {
   border-radius: var(--radius-full);
 }
 /* ─── Detail-panel skeleton ───
-   Mirrors .detail-card: heading block, meta lines, then the action button row. */
+   Mirrors the real record card: identity rail beside an evidence column, so the
+   layout does not reflow when results land. */
 .dv-skel {
   background: var(--white);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+  display: grid;
+  grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+}
+.dv-skel-rail {
   padding: var(--space-5);
+  border-right: 1px solid var(--border-light);
+  background: linear-gradient(180deg, var(--primary-faint) 0%, var(--white) 42%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.dv-skel-main {
+  padding: var(--space-5);
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
 }
+.dv-skel-tag {
+  height: 0.95rem;
+  width: 4.4rem;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-1);
+}
 .dv-skel-head {
-  height: 1.6rem;
+  height: 1.15rem;
   border-radius: var(--radius-sm);
 }
-.dv-skel-actions {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
-  margin-top: var(--space-3);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border-light);
+.dv-skel-verdict {
+  height: 1.35rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
 }
 .dv-skel-btn {
-  height: 1.9rem;
-  width: 6rem;
+  height: 2.2rem;
+  width: 8rem;
   border-radius: var(--radius);
+  margin-top: var(--space-3);
+}
+.dv-skel-utils {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-light);
+}
+.dv-skel-tabs {
+  display: flex;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+}
+.dv-skel-pill {
+  height: 1rem;
+  border-radius: var(--radius-full);
+}
+.dv-skel-item {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border-light);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius);
+}
+.dv-skel-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+@media (max-width: 1100px) {
+  .dv-skel {
+    grid-template-columns: 1fr;
+  }
+  .dv-skel-rail {
+    border-right: 0;
+    border-bottom: 1px solid var(--border-light);
+  }
 }
 
 .sli-skel-dot,
 .sli-skel-line,
 .sli-skel-pill,
 .dv-skel-head,
+.dv-skel-tag,
+.dv-skel-verdict,
+.dv-skel-pill,
 .dv-skel-btn {
-  background: linear-gradient(
-      90deg,
-      var(--surface-alt) 25%,
-      var(--border-light) 50%,
-      var(--surface-alt) 75%
-    )
-    0 0 / 300% 100%;
-  animation: skel-shimmer 1.4s ease-in-out infinite;
+  /* Solid track with a bright sweep over it. Two near-identical greys read as
+     a static block, so the highlight is white and the travel is linear. */
+  background-color: var(--skeleton);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 55% 100%;
+  animation: skel-shimmer 1.25s linear infinite;
 }
-/* Reduced motion freezes the sweep; the track colour still reads as a placeholder. */
 @keyframes skel-shimmer {
+  from {
+    background-position: -75% 0;
+  }
   to {
-    background-position: -150% 0;
+    background-position: 175% 0;
+  }
+}
+
+/* Offset each row so the list reads as progressive work, not one pulsing block. */
+.sli-skel:nth-child(2) .sli-skel-line,
+.sli-skel:nth-child(2) .sli-skel-dot,
+.sli-skel:nth-child(2) .sli-skel-pill {
+  animation-delay: 0.09s;
+}
+.sli-skel:nth-child(3) .sli-skel-line,
+.sli-skel:nth-child(3) .sli-skel-dot,
+.sli-skel:nth-child(3) .sli-skel-pill {
+  animation-delay: 0.18s;
+}
+.sli-skel:nth-child(4) .sli-skel-line,
+.sli-skel:nth-child(4) .sli-skel-dot,
+.sli-skel:nth-child(4) .sli-skel-pill {
+  animation-delay: 0.27s;
+}
+.sli-skel:nth-child(5) .sli-skel-line,
+.sli-skel:nth-child(5) .sli-skel-dot,
+.sli-skel:nth-child(5) .sli-skel-pill {
+  animation-delay: 0.36s;
+}
+.dv-skel .sli-skel-line:nth-of-type(2) {
+  animation-delay: 0.09s;
+}
+.dv-skel .sli-skel-line:nth-of-type(3) {
+  animation-delay: 0.18s;
+}
+.dv-skel-actions .dv-skel-btn:nth-child(2) {
+  animation-delay: 0.09s;
+}
+.dv-skel-actions .dv-skel-btn:nth-child(3) {
+  animation-delay: 0.18s;
+}
+.dv-skel-actions .dv-skel-btn:nth-child(4) {
+  animation-delay: 0.27s;
+}
+.dv-skel-actions .dv-skel-btn:nth-child(5) {
+  animation-delay: 0.36s;
+}
+
+/* No sweep without motion: the flat track still reads as a placeholder. */
+@media (prefers-reduced-motion: reduce) {
+  .sli-skel-dot,
+  .sli-skel-line,
+  .sli-skel-pill,
+  .dv-skel-head,
+  .dv-skel-tag,
+  .dv-skel-verdict,
+  .dv-skel-pill,
+  .dv-skel-btn {
+    background-image: none;
   }
 }
 
@@ -2844,51 +2995,30 @@ body {
 /* ═══════════════════════════════
    RESPONSIVE
 ═══════════════════════════════ */
-@media (max-width: 960px) and (orientation: landscape) {
-  body {
-    overflow: auto;
+/* Brand, search, tool buttons and nav links stop fitting on one line below
+   this, so the links fold into the hamburger. Width-only: the portrait block
+   below handles the full mobile treatment. */
+@media (max-width: 1300px) {
+  .topbar-right-desktop {
+    display: none;
   }
-  #root {
-    overflow: auto;
-  }
-  .main-layout {
-    grid-template-columns: 1fr;
-    overflow: visible;
-  }
-  .left-panel {
-    max-height: 260px;
-    border-right: none;
-    border-bottom: 1px solid var(--border-light);
-  }
-  .right-panel {
-    overflow: visible;
-  }
-  .topbar-search {
-    max-width: 40vw;
-    width: 340px;
-  }
-  .topbar-search:focus-within {
-    width: 340px;
-  }
-  .contribute-bar {
-    margin: 0.5rem 1.25rem 1.25rem;
+  .topbar-hamburger {
+    display: flex;
   }
 }
 
-/* ─── Tablet portrait: mobile-like continuous scroll ─── */
-@media (max-width: 960px) and (orientation: portrait) {
-  body {
-    overflow: auto;
-  }
-  #root {
-    overflow: auto;
-  }
+/* ─── Mobile top bar chrome ───
+   Orientation-independent: the desktop search does not fit under 960px in
+   either orientation. Panel layout stays orientation-specific below. */
+@media (max-width: 960px) {
   .topbar {
     padding: 0 0.75rem;
   }
 
-  /* Hide desktop search and nav, show hamburger + mobile search */
-  .topbar-search-desktop {
+  /* Hide desktop search and nav, show hamburger + mobile search.
+     Doubled class: .topbar-search-group sets display:flex later in the file and
+     would otherwise win the cascade on equal specificity. */
+  .topbar-search-group.topbar-search-desktop {
     display: none;
   }
   .topbar-right-desktop {
@@ -3054,6 +3184,43 @@ body {
   .topbar-mobile-cta:hover {
     background: var(--primary-light);
   }
+}
+
+@media (max-width: 960px) and (orientation: landscape) {
+  body {
+    overflow: auto;
+  }
+  #root {
+    overflow: auto;
+  }
+  .main-layout {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+  .left-panel {
+    max-height: 260px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .right-panel {
+    overflow: visible;
+  }
+  .topbar-search:focus-within {
+    width: 340px;
+  }
+  .contribute-bar {
+    margin: 0.5rem 1.25rem 1.25rem;
+  }
+}
+
+/* ─── Tablet portrait: mobile-like continuous scroll ─── */
+@media (max-width: 960px) and (orientation: portrait) {
+  body {
+    overflow: auto;
+  }
+  #root {
+    overflow: auto;
+  }
 
   /* Single-scroll: hide left panel, flatten layout */
   .left-panel {
@@ -3079,57 +3246,6 @@ body {
   }
   .detail-wrap {
     padding: 0.75rem;
-  }
-  .dh {
-    padding: 1.25rem;
-  }
-
-  /* Tags: mobile layout */
-  .dh-top.dh-top-mobile {
-    display: flex;
-  }
-  .dh-title-actions {
-    display: none;
-  }
-  .dh-title-row {
-    display: block;
-  }
-
-  /* Action bar */
-  .action-bar {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0.6rem 0.85rem;
-    gap: 0.35rem;
-  }
-  .ab-sep {
-    display: none;
-  }
-  .ab-group {
-    display: contents;
-  }
-  .ab-group:first-child .ab-btn {
-    justify-content: center;
-    min-height: 38px;
-    font-size: var(--fs-4);
-  }
-  .ab-group:first-child .ab-btn:only-child {
-    grid-column: 1 / -1;
-  }
-  .ab-group:nth-child(3) {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-column: 1 / -1;
-    gap: 0.35rem;
-  }
-  .ab-btn {
-    font-size: var(--fs-2);
-    padding: 0.35rem 0.3rem;
-    min-height: 32px;
-    justify-content: center;
-  }
-  .ab-group:last-child .ab-btn {
-    grid-column: 1 / -1;
   }
 
   /* Tabs */
@@ -3168,9 +3284,6 @@ body {
     order: 2;
     padding: 0.4rem 0.85rem 0.6rem;
   }
-  .ri-expand {
-    order: 3;
-  }
   .ri-actions {
     order: 4;
     display: flex;
@@ -3199,13 +3312,6 @@ body {
     min-width: auto;
     font-size: var(--fs-1);
     padding: 0.15rem 0.45rem;
-  }
-  .progress-section {
-    padding: 0.65rem 1rem;
-  }
-  .progress-row {
-    flex-wrap: wrap;
-    gap: 0.5rem;
   }
   .progress-label {
     width: 100%;
@@ -3256,20 +3362,8 @@ body {
   .detail-wrap {
     padding: 0.5rem;
   }
-  .dh {
-    padding: 1rem;
-  }
   .dh-title {
     font-size: var(--fs-6);
-  }
-  .dh-apa-text {
-    font-size: var(--fs-3);
-  }
-  .action-bar {
-    padding: 0.4rem 0.75rem;
-  }
-  .ab-sep {
-    display: none;
   }
   .rep-list {
     padding: 0.5rem 0.75rem 1rem;

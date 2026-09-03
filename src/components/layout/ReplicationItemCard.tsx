@@ -63,8 +63,14 @@ export const ReplicationItemCard = (props: ReplicationItemCardProps) => {
       .filter(Boolean)
       .join(" · ");
 
+  const outcomeClass = () => badges()[0]?.cls || "none";
+  /* The stored quote packs several extracts behind "||"; the first is the one
+     the outcome label was read from. */
+  const quote = () => (props.item.outcome_quote || "").split("||")[0]!.replace(/\s+/g, " ").trim();
+  const LONG_QUOTE = 240;
+
   return (
-    <div class="rep-item">
+    <div class={`rep-item rep-item--${outcomeClass()}`}>
       <div class="rep-item-main">
         <div class="ri-badge-group">
           <For each={badges().filter((b) => !(props.hideNa && !b.cls))}>
@@ -127,25 +133,27 @@ export const ReplicationItemCard = (props: ReplicationItemCardProps) => {
         </div>
       </div>
 
-      {props.item.outcome_quote && (
-        <div class="ri-expand">
-          <button
-            class={`ri-expand-toggle ${expanded() ? "expanded" : ""}`}
-            onClick={() => setExpanded(!expanded())}
-          >
-            <span class="arrow">&#9654;</span> Outcome quote
-          </button>
-          {expanded() && (
-            <div class="ri-quote">
-              <div class="ri-quote-text">"{props.item.outcome_quote}"</div>
-              {props.item.outcome_quote_source && (
-                <div class="ri-quote-source">
-                  Source: {props.item.outcome_quote_source}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+      {quote() && (
+        <figure class="ri-quote">
+          <blockquote class="ri-quote-text">
+            {expanded() || quote().length <= LONG_QUOTE
+              ? quote()
+              : `${quote().slice(0, LONG_QUOTE).trimEnd()}…`}
+          </blockquote>
+          <figcaption class="ri-quote-foot">
+            <span>
+              The passage this outcome was read from
+              {props.item.outcome_quote_source
+                ? `, in ${props.item.outcome_quote_source}`
+                : ""}
+            </span>
+            {quote().length > LONG_QUOTE && (
+              <button class="ri-quote-more" onClick={() => setExpanded(!expanded())}>
+                {expanded() ? "Show less" : "Show full passage"}
+              </button>
+            )}
+          </figcaption>
+        </figure>
       )}
     </div>
   );

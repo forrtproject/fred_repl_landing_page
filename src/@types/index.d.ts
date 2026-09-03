@@ -53,6 +53,10 @@ export type RecordData = {
   replications: ReplicationItem[];
   originals: ReplicationItem[];
   reproductions: ReplicationItem[];
+  /* Written by the OpenCitations pipeline, absent until it has run. */
+  citation_timeline?: CitationTimeline;
+  n_citations?: number;
+  replication_year_counts?: Record<string, number>;
 };
 
 export type CitationTimelineEntry = {
@@ -83,8 +87,10 @@ export type OriginalPaper = {
   url: string | null;
   types?: string[];
   record: RecordData | null;
+  /* Promoted from `record` by the API; absent until the pipeline has run. */
   citation_timeline?: CitationTimeline;
   n_citations?: number;
+  replication_year_counts?: Record<string, number>;
 };
 
 export type DOIResults = {

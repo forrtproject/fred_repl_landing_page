@@ -1,6 +1,6 @@
 import { AlertCircleIcon, ChartIcon } from "../icons";
 import { createEffect, createMemo, Show, For, onCleanup } from "solid-js";
-import type { OriginalPaper, CitationTimelineEntry } from "../../@types";
+import type { OriginalPaper, CitationTimeline, CitationTimelineEntry } from "../../@types";
 import { createFocusTrap } from "../../utils/modalA11y";
 
 type Props = {
@@ -369,11 +369,18 @@ export const CitationImpactModal = (props: Props) => {
   // Mounted only while open, so the trap is always active for this instance.
   createFocusTrap(() => modalRef, () => true);
 
-  const tl = () => props.paper.citation_timeline?.entries ?? [];
+  /* The API promotes this from `record` to the top level; the nested read is the
+     fallback for older responses. Until the OpenCitations pipeline runs, the key
+     may still hold a plain year->count map, so require the real shape. */
+  const timeline = (): CitationTimeline | undefined => {
+    const raw = props.paper.citation_timeline ?? props.paper.record?.citation_timeline;
+    return raw && Array.isArray(raw.entries) ? raw : undefined;
+  };
+  const tl = () => timeline()?.entries ?? [];
   const reps = () => props.paper.record?.replications ?? [];
 
   const formattedLastUpdated = createMemo(() => {
-    const raw = props.paper.citation_timeline?.last_updated;
+    const raw = timeline()?.last_updated;
     if (!raw) return null;
     try {
       return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(raw));

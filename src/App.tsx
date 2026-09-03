@@ -159,6 +159,14 @@ function App() {
     }).length;
   });
 
+  /* DOI mode knows how many records were asked for, so the placeholder stack can
+     match it and the layout does not jump when results land. Fuzzy and advanced
+     searches have no count until the response, so they get a short stack. */
+  const skeletonCount = () => {
+    const n = tags().length;
+    return searchMode() === "doi" && n > 0 ? Math.min(n, 4) : 3;
+  };
+
   const paperRefs: Record<string, HTMLDivElement> = {};
   let rightPanelRef: HTMLDivElement | undefined;
   let topbarInputRef: HTMLInputElement | undefined;
@@ -872,27 +880,68 @@ function App() {
                   </Show>
                 }
               >
-                <div class="dv-skel" aria-busy="true" aria-label="Searching">
-                  <div class="dv-skel-head" style={{ width: "72%" }} />
-                  <div class="sli-skel-line" style={{ width: "46%" }} />
-                  <div class="sli-skel-line" style={{ width: "31%" }} />
-                  <div class="sli-skel-line" style={{ width: "38%" }} />
-                  <div class="dv-skel-actions">
-                    <For each={[0, 1, 2, 3, 4]}>
-                      {(i) => (
-                        <div
-                          class="dv-skel-btn"
-                          style={{ width: `${5.5 + (i % 3) * 1.4}rem` }}
-                        />
-                      )}
-                    </For>
-                  </div>
+                <div aria-busy="true" aria-label="Searching">
+                  <For each={Array.from({ length: skeletonCount() })}>
+                    {(_, card) => (
+                      <div class="dv-skel">
+                        <div class="dv-skel-rail">
+                          <div class="dv-skel-tag" />
+                          <div class="dv-skel-head" style={{ width: "88%" }} />
+                          <div
+                            class="dv-skel-head"
+                            style={{ width: `${52 + (card() % 3) * 12}%` }}
+                          />
+                          <div class="sli-skel-line" style={{ width: "72%" }} />
+                          <div class="sli-skel-line" style={{ width: "58%" }} />
+                          <div class="sli-skel-line" style={{ width: "64%" }} />
+                          <div class="dv-skel-btn" />
+                          <div class="dv-skel-utils">
+                            <For each={[0, 1, 2, 3]}>
+                              {(i) => (
+                                <div
+                                  class="dv-skel-pill"
+                                  style={{ width: `${2.6 + (i % 3) * 0.9}rem` }}
+                                />
+                              )}
+                            </For>
+                          </div>
+                        </div>
+                        <div class="dv-skel-main">
+                          <div
+                            class="dv-skel-verdict"
+                            style={{ width: `${44 + (card() % 3) * 9}%` }}
+                          />
+                          <div class="dv-skel-tabs">
+                            <div class="dv-skel-pill" style={{ width: "6rem" }} />
+                            <div class="dv-skel-pill" style={{ width: "7rem" }} />
+                          </div>
+                          <For each={[0, 1]}>
+                            {(row) => (
+                              <div class="dv-skel-item">
+                                <div class="dv-skel-pill" style={{ width: "3.6rem" }} />
+                                <div class="dv-skel-item-body">
+                                  <div
+                                    class="sli-skel-line"
+                                    style={{ width: `${86 - row * 14}%` }}
+                                  />
+                                  <div class="sli-skel-line" style={{ width: "62%" }} />
+                                  <div class="sli-skel-line" style={{ width: "40%" }} />
+                                </div>
+                              </div>
+                            )}
+                          </For>
+                        </div>
+                      </div>
+                    )}
+                  </For>
                 </div>
               </Show>
             }
           >
             <>
-              <Show when={aggregateOutcomes().total > 0}>
+              {/* With a single paper the card's own verdict line already says
+                  this, so the aggregate only earns its place across several. */}
+              <Show when={aggregateOutcomes().total > 0 && paperCount() > 1}>
                 <SearchOutcomesBanner
                   outcomes={aggregateOutcomes()}
                   paperCount={paperCount()}
